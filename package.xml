@@ -3,7 +3,7 @@
 <package format="2">
 
   <name>direct_lidar_inertial_odometry</name>
-  <version>1.0.0</version>
+  <version>1.1.0</version>
   <description>Direct LiDAR-Inertial Odometry: Lightweight LIO with Continuous-Time Motion Correction</description>
 
   <maintainer email="kennyjchen@ucla.edu">Kenny J. Chen</maintainer>
