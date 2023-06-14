@@ -12,7 +12,7 @@ DLIO is a new lightweight LiDAR-inertial odometry algorithm with a novel coarse-
 ## Instructions
 
 ### Sensor Setup
-DLIO has been extensively tested using a variety of sensor configurations and currently supports Ouster, Velodyne, and Hesai LiDARs. The point cloud should be of input type `sensor_msgs::PointCloud2` and the 6-axis IMU input type of `sensor_msgs::Imu`.
+DLIO has been extensively tested using a variety of sensor configurations and currently supports Ouster, Velodyne, Livox, and Hesai LiDARs. The point cloud should be of input type `sensor_msgs::PointCloud2` and the 6-axis IMU input type of `sensor_msgs::Imu`.
 
 For best performance, extrinsic calibration between the LiDAR/IMU sensors and the robot's center-of-gravity should be inputted into `cfg/dlio.yaml`. If the exact values of these are unavailable, a rough LiDAR-to-IMU extrinsics can also be used (note however that performance will be degraded).
 
