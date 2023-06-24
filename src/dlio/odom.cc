@@ -510,11 +510,8 @@ void dlio::OdomNode::getScanFromROS(const sensor_msgs::PointCloud2ConstPtr& pc) 
     } else if (field.name == "time") {
       this->sensor = dlio::SensorType::VELODYNE;
       break;
-    } else if (field.name == "offset_time") {
-      this->sensor = dlio::SensorType::LIVOX;
-      break;
     } else if (field.name == "timestamp") {
-      this->sensor = dlio::SensorType::HESAI;
+      this->sensor = dlio::SensorType::LIVOX;
       break;
     }
   }
@@ -625,22 +622,12 @@ void dlio::OdomNode::deskewPointcloud() {
   } else if (this->sensor == dlio::SensorType::LIVOX) {
 
     point_time_cmp = [](const PointType& p1, const PointType& p2)
-      { return p1.offset_time < p2.offset_time; };
-    point_time_neq = [](boost::range::index_value<PointType&, long> p1,
-                        boost::range::index_value<PointType&, long> p2)
-      { return p1.value().offset_time != p2.value().offset_time; };
-    extract_point_time = [&sweep_ref_time](boost::range::index_value<PointType&, long> pt)
-      { return sweep_ref_time + pt.value().offset_time * 1e-9f; };
-
-  } else if (this->sensor == dlio::SensorType::HESAI) {
-
-    point_time_cmp = [](const PointType& p1, const PointType& p2)
       { return p1.timestamp < p2.timestamp; };
     point_time_neq = [](boost::range::index_value<PointType&, long> p1,
                         boost::range::index_value<PointType&, long> p2)
       { return p1.value().timestamp != p2.value().timestamp; };
     extract_point_time = [&sweep_ref_time](boost::range::index_value<PointType&, long> pt)
-      { return pt.value().timestamp; };
+      { return pt.value().timestamp * 1e-9f; };
 
   }
 
@@ -864,9 +851,9 @@ void dlio::OdomNode::callbackImu(const sensor_msgs::Imu::ConstPtr& imu_raw) {
   ang_vel[1] = imu->angular_velocity.y;
   ang_vel[2] = imu->angular_velocity.z;
 
-  lin_accel[0] = imu->linear_acceleration.x;
-  lin_accel[1] = imu->linear_acceleration.y;
-  lin_accel[2] = imu->linear_acceleration.z;
+  lin_accel[0] = imu->linear_acceleration.x * this->gravity_;
+  lin_accel[1] = imu->linear_acceleration.y * this->gravity_;
+  lin_accel[2] = imu->linear_acceleration.z * this->gravity_;
 
   if (this->first_imu_stamp == 0.) {
     this->first_imu_stamp = imu->header.stamp.toSec();
@@ -1922,11 +1909,6 @@ void dlio::OdomNode::debug() {
   } else if (this->sensor == dlio::SensorType::LIVOX) {
     std::cout << "| " << std::left << std::setfill(' ') << std::setw(66)
       << "Sensor Rates: Livox @ " + to_string_with_precision(avg_lidar_rate, 2)
-                                  + " Hz, IMU @ " + to_string_with_precision(avg_imu_rate, 2) + " Hz"
-      << "|" << std::endl;
-  } else if (this->sensor == dlio::SensorType::HESAI) {
-    std::cout << "| " << std::left << std::setfill(' ') << std::setw(66)
-      << "Sensor Rates: Hesai @ " + to_string_with_precision(avg_lidar_rate, 2)
                                   + " Hz, IMU @ " + to_string_with_precision(avg_imu_rate, 2) + " Hz"
       << "|" << std::endl;
   } else {
