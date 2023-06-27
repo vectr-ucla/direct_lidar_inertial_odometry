@@ -75,9 +75,10 @@ std::string to_string_with_precision(const T a_value, const int n = 6)
 // DLIO
 #include <nano_gicp/nano_gicp.h>
 #include <direct_lidar_inertial_odometry/save_pcd.h>
+#include <livox_ros_driver/CustomMsg.h>
 
 namespace dlio {
-  enum class SensorType { OUSTER, VELODYNE, LIVOX, UNKNOWN };
+  enum class SensorType { OUSTER, VELODYNE, LIVOX, HESAI, UNKNOWN };
 
   class OdomNode;
   class MapNode;
@@ -90,7 +91,8 @@ namespace dlio {
     union {
       std::uint32_t t; // OUSTER: time since beginning of scan in nanoseconds
       float time; // VELODYNE: time since beginning of scan in seconds
-      double timestamp; // LIVOX: absolute timestamp in nanoseconds
+      std::uint32_t offset_time; // LIVOX: time from beginning of scan in nanoseconds
+      double timestamp; // HESAI: absolute timestamp in seconds
     };
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   } EIGEN_ALIGN16;
@@ -103,6 +105,7 @@ POINT_CLOUD_REGISTER_POINT_STRUCT(dlio::Point,
                                  (float, intensity, intensity)
                                  (std::uint32_t, t, t)
                                  (float, time, time)
+                                 (std::uint32_t, offset_time, offset_time)
                                  (double, timestamp, timestamp))
 
 typedef dlio::Point PointType;

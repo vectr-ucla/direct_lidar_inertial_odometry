@@ -17,6 +17,7 @@
 
   <arg name="pointcloud_topic" default="lidar"/>
   <arg name="imu_topic" default="imu"/>
+  <arg name="livox_topic" default="livox"/>
 
   <!-- DLIO Odometry Node -->
   <node ns="$(arg robot_namespace)" name="dlio_odom" pkg="direct_lidar_inertial_odometry" type="dlio_odom_node" output="screen" clear_params="true">
@@ -28,6 +29,7 @@
     <!-- Subscriptions -->
     <remap from="~pointcloud" to="$(arg pointcloud_topic)"/>
     <remap from="~imu" to="$(arg imu_topic)"/>
+    <remap from="~livox" to="$(arg livox_topic)"/>
 
     <!-- Publications -->
     <remap from="~odom"     to="dlio/odom_node/odom"/>
@@ -36,6 +38,7 @@
     <remap from="~kf_pose"  to="dlio/odom_node/keyframes"/>
     <remap from="~kf_cloud" to="dlio/odom_node/pointcloud/keyframe"/>
     <remap from="~deskewed" to="dlio/odom_node/pointcloud/deskewed"/>
+    <remap from="~livox2dlio" to="$(arg pointcloud_topic)"/>
 
   </node>
 
