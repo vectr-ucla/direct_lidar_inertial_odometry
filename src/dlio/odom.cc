@@ -1571,21 +1571,16 @@ void dlio::OdomNode::updateKeyframes() {
   // update keyframes
   bool newKeyframe = false;
 
-  // spaciousness keyframing
   if (abs(dd) > this->keyframe_thresh_dist_ || abs(theta_deg) > this->keyframe_thresh_rot_) {
     newKeyframe = true;
   }
 
-  // rotational exploration keyframing
-  if (abs(dd) <= this->keyframe_thresh_dist_ && abs(theta_deg) > this->keyframe_thresh_rot_ && num_nearby <= 1) {
-    newKeyframe = true;
-  }
-
-  // check for nearby keyframes
   if (abs(dd) <= this->keyframe_thresh_dist_) {
     newKeyframe = false;
-  } else if (abs(dd) <= 0.5) {
-    newKeyframe = false;
+  }
+
+  if (abs(dd) <= this->keyframe_thresh_dist_ && abs(theta_deg) > this->keyframe_thresh_rot_ && num_nearby <= 1) {
+    newKeyframe = true;
   }
 
   if (newKeyframe) {
