@@ -30,6 +30,8 @@ dlio::OdomNode::OdomNode(ros::NodeHandle node_handle) : nh(node_handle) {
       &dlio::OdomNode::callbackPointCloud, this, ros::TransportHints().tcpNoDelay());
   this->imu_sub = this->nh.subscribe("imu", 1000,
       &dlio::OdomNode::callbackImu, this, ros::TransportHints().tcpNoDelay());
+  this->livox_sub = this->nh.subscribe("livox", 1,
+      &dlio::OdomNode::callbackLivox, this, ros::TransportHints().tcpNoDelay());
 
   this->odom_pub     = this->nh.advertise<nav_msgs::Odometry>("odom", 1, true);
   this->pose_pub     = this->nh.advertise<geometry_msgs::PoseStamped>("pose", 1, true);
@@ -37,6 +39,7 @@ dlio::OdomNode::OdomNode(ros::NodeHandle node_handle) : nh(node_handle) {
   this->kf_pose_pub  = this->nh.advertise<geometry_msgs::PoseArray>("kf_pose", 1, true);
   this->kf_cloud_pub = this->nh.advertise<sensor_msgs::PointCloud2>("kf_cloud", 1, true);
   this->deskewed_pub = this->nh.advertise<sensor_msgs::PointCloud2>("deskewed", 1, true);
+  this->livox_pub    = this->nh.advertise<sensor_msgs::PointCloud2>("livox2dlio", 1, true);
 
   this->publish_timer = this->nh.createTimer(ros::Duration(0.01), &dlio::OdomNode::publishPose, this);
 
@@ -510,8 +513,11 @@ void dlio::OdomNode::getScanFromROS(const sensor_msgs::PointCloud2ConstPtr& pc) 
     } else if (field.name == "time") {
       this->sensor = dlio::SensorType::VELODYNE;
       break;
-    } else if (field.name == "timestamp") {
+    } else if (field.name == "offset_time") {
       this->sensor = dlio::SensorType::LIVOX;
+      break;
+    } else if (field.name == "timestamp") {
+      this->sensor = dlio::SensorType::HESAI;
       break;
     }
   }
@@ -622,12 +628,22 @@ void dlio::OdomNode::deskewPointcloud() {
   } else if (this->sensor == dlio::SensorType::LIVOX) {
 
     point_time_cmp = [](const PointType& p1, const PointType& p2)
+      { return p1.offset_time < p2.offset_time; };
+    point_time_neq = [](boost::range::index_value<PointType&, long> p1,
+                        boost::range::index_value<PointType&, long> p2)
+      { return p1.value().offset_time != p2.value().offset_time; };
+    extract_point_time = [&sweep_ref_time](boost::range::index_value<PointType&, long> pt)
+      { return sweep_ref_time + pt.value().offset_time * 1e-9f; };
+
+  } else if (this->sensor == dlio::SensorType::HESAI) {
+
+    point_time_cmp = [](const PointType& p1, const PointType& p2)
       { return p1.timestamp < p2.timestamp; };
     point_time_neq = [](boost::range::index_value<PointType&, long> p1,
                         boost::range::index_value<PointType&, long> p2)
       { return p1.value().timestamp != p2.value().timestamp; };
     extract_point_time = [&sweep_ref_time](boost::range::index_value<PointType&, long> pt)
-      { return pt.value().timestamp * 1e-9f; };
+      { return pt.value().timestamp; };
 
   }
 
@@ -851,9 +867,9 @@ void dlio::OdomNode::callbackImu(const sensor_msgs::Imu::ConstPtr& imu_raw) {
   ang_vel[1] = imu->angular_velocity.y;
   ang_vel[2] = imu->angular_velocity.z;
 
-  lin_accel[0] = imu->linear_acceleration.x * this->gravity_;
-  lin_accel[1] = imu->linear_acceleration.y * this->gravity_;
-  lin_accel[2] = imu->linear_acceleration.z * this->gravity_;
+  lin_accel[0] = imu->linear_acceleration.x;
+  lin_accel[1] = imu->linear_acceleration.y;
+  lin_accel[2] = imu->linear_acceleration.z;
 
   if (this->first_imu_stamp == 0.) {
     this->first_imu_stamp = imu->header.stamp.toSec();
@@ -951,7 +967,7 @@ void dlio::OdomNode::callbackImu(const sensor_msgs::Imu::ConstPtr& imu_raw) {
 
     double dt = imu->header.stamp.toSec() - this->prev_imu_stamp;
     this->imu_rates.push_back( 1./dt );
-    if (dt == 0) { return; }
+    if (dt == 0) { dt = 1.0/200.0; }
 
     // Apply the calibrated bias to the new IMU measurements
     this->imu_meas.stamp = imu->header.stamp.toSec();
@@ -978,6 +994,31 @@ void dlio::OdomNode::callbackImu(const sensor_msgs::Imu::ConstPtr& imu_raw) {
     }
 
   }
+
+}
+
+void dlio::OdomNode::callbackLivox(const livox_ros_driver::CustomMsgConstPtr& livox) {
+
+  // convert custom livox message to pcl pointcloud
+  pcl::PointCloud<PointType>::Ptr cloud (new pcl::PointCloud<PointType>);
+  cloud->header.frame_id = this->lidar_frame;
+  cloud->header.stamp = livox->header.stamp.toSec();
+  cloud->header.seq = livox->header.seq;
+
+  for (int i = 0; i < livox->point_num; i++) {
+    PointType p;
+    p.x = livox->points[i].x;
+    p.y = livox->points[i].y;
+    p.z = livox->points[i].z;
+    p.intensity = livox->points[i].reflectivity;
+    p.offset_time = livox->points[i].offset_time;
+    cloud->push_back(p);
+  }
+
+  // publish converted livox pointcloud
+  sensor_msgs::PointCloud2 cloud_ros;
+  pcl::toROSMsg(*cloud, cloud_ros);
+  this->livox_pub.publish(cloud_ros);
 
 }
 
@@ -1904,6 +1945,11 @@ void dlio::OdomNode::debug() {
   } else if (this->sensor == dlio::SensorType::LIVOX) {
     std::cout << "| " << std::left << std::setfill(' ') << std::setw(66)
       << "Sensor Rates: Livox @ " + to_string_with_precision(avg_lidar_rate, 2)
+                                  + " Hz, IMU @ " + to_string_with_precision(avg_imu_rate, 2) + " Hz"
+      << "|" << std::endl;
+  } else if (this->sensor == dlio::SensorType::HESAI) {
+    std::cout << "| " << std::left << std::setfill(' ') << std::setw(66)
+      << "Sensor Rates: Hesai @ " + to_string_with_precision(avg_lidar_rate, 2)
                                   + " Hz, IMU @ " + to_string_with_precision(avg_imu_rate, 2) + " Hz"
       << "|" << std::endl;
   } else {

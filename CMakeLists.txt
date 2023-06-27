@@ -45,6 +45,7 @@ find_package(catkin REQUIRED COMPONENTS
   nav_msgs
   pcl_ros
   message_generation
+  livox_ros_driver
 )
 
 add_service_files(
@@ -67,6 +68,7 @@ catkin_package(
     sensor_msgs
     geometry_msgs
     pcl_ros
+    livox_ros_driver
   INCLUDE_DIRS
     include
   LIBRARIES
