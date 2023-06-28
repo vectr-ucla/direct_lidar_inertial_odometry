@@ -867,9 +867,15 @@ void dlio::OdomNode::callbackImu(const sensor_msgs::Imu::ConstPtr& imu_raw) {
   ang_vel[1] = imu->angular_velocity.y;
   ang_vel[2] = imu->angular_velocity.z;
 
-  lin_accel[0] = imu->linear_acceleration.x;
-  lin_accel[1] = imu->linear_acceleration.y;
-  lin_accel[2] = imu->linear_acceleration.z;
+  if (this->sensor == dlio::SensorType::LIVOX) {
+    lin_accel[0] = imu->linear_acceleration.x * this->gravity_;
+    lin_accel[1] = imu->linear_acceleration.y * this->gravity_;
+    lin_accel[2] = imu->linear_acceleration.z * this->gravity_;
+  } else {
+    lin_accel[0] = imu->linear_acceleration.x;
+    lin_accel[1] = imu->linear_acceleration.y;
+    lin_accel[2] = imu->linear_acceleration.z;
+  }
 
   if (this->first_imu_stamp == 0.) {
     this->first_imu_stamp = imu->header.stamp.toSec();
