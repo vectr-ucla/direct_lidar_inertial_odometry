@@ -24,7 +24,6 @@
   <depend>geometry_msgs</depend>
   <depend>nav_msgs</depend>
   <depend>pcl_ros</depend>
-  <depend>livox_ros_driver</depend>
 
   <export>
   </export>

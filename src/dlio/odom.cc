@@ -997,16 +997,13 @@ void dlio::OdomNode::callbackImu(const sensor_msgs::Imu::ConstPtr& imu_raw) {
 
 }
 
-void dlio::OdomNode::callbackLivox(const livox_ros_driver::CustomMsgConstPtr& livox) {
+void dlio::OdomNode::callbackLivox(const livox_ros_driver2::CustomMsgConstPtr& livox) {
 
   // convert custom livox message to pcl pointcloud
-  pcl::PointCloud<PointType>::Ptr cloud (new pcl::PointCloud<PointType>);
-  cloud->header.frame_id = this->lidar_frame;
-  cloud->header.stamp = livox->header.stamp.toSec();
-  cloud->header.seq = livox->header.seq;
+  pcl::PointCloud<LivoxPoint>::Ptr cloud (new pcl::PointCloud<LivoxPoint>);
 
   for (int i = 0; i < livox->point_num; i++) {
-    PointType p;
+    LivoxPoint p;
     p.x = livox->points[i].x;
     p.y = livox->points[i].y;
     p.z = livox->points[i].z;
@@ -1018,6 +1015,10 @@ void dlio::OdomNode::callbackLivox(const livox_ros_driver::CustomMsgConstPtr& li
   // publish converted livox pointcloud
   sensor_msgs::PointCloud2 cloud_ros;
   pcl::toROSMsg(*cloud, cloud_ros);
+
+  cloud_ros.header.stamp = livox->header.stamp;
+  cloud_ros.header.seq = livox->header.seq;
+  cloud_ros.header.frame_id = this->lidar_frame;
   this->livox_pub.publish(cloud_ros);
 
 }

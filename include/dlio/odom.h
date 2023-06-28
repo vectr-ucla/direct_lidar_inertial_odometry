@@ -30,7 +30,7 @@ private:
 
   void callbackPointCloud(const sensor_msgs::PointCloud2ConstPtr& pc);
   void callbackImu(const sensor_msgs::Imu::ConstPtr& imu);
-  void callbackLivox(const livox_ros_driver::CustomMsgConstPtr& livox);
+  void callbackLivox(const livox_ros_driver2::CustomMsgConstPtr& livox);
 
   void publishPose(const ros::TimerEvent& e);
 
