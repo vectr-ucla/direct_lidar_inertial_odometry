@@ -972,8 +972,8 @@ void dlio::OdomNode::callbackImu(const sensor_msgs::Imu::ConstPtr& imu_raw) {
   } else {
 
     double dt = imu->header.stamp.toSec() - this->prev_imu_stamp;
-    this->imu_rates.push_back( 1./dt );
     if (dt == 0) { dt = 1.0/200.0; }
+    this->imu_rates.push_back( 1./dt );
 
     // Apply the calibrated bias to the new IMU measurements
     this->imu_meas.stamp = imu->header.stamp.toSec();
