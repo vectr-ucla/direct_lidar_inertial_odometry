@@ -1,6 +1,6 @@
 # Direct LiDAR-Inertial Odometry: Lightweight LIO with Continuous-Time Motion Correction
 
-#### [[Paper](https://arxiv.org/abs/2203.03749)] [[Video](https://www.youtube.com/watch?v=4-oXjG8ow10)] [[Presentation](https://www.youtube.com/watch?v=Hmiw66KZ1tU)]
+#### [[ IEEE ICRA ](https://ieeexplore.ieee.org/document/10160508)] [[ arXiv ](https://arxiv.org/abs/2203.03749)] [[ Video ](https://www.youtube.com/watch?v=4-oXjG8ow10)] [[ Presentation ](https://www.youtube.com/watch?v=Hmiw66KZ1tU)]
 
 DLIO is a new lightweight LiDAR-inertial odometry algorithm with a novel coarse-to-fine approach in constructing continuous-time trajectories for precise motion correction. It features several algorithmic improvements over its predecessor, [DLO](https://github.com/vectr-ucla/direct_lidar_odometry), and was presented at the IEEE International Conference on Robotics and Automation (ICRA) in London, UK in 2023.
 
@@ -84,8 +84,10 @@ If you found this work useful, please cite our manuscript:
 @article{chen2022dlio,
   title={Direct LiDAR-Inertial Odometry: Lightweight LIO with Continuous-Time Motion Correction},
   author={Chen, Kenny and Nemiroff, Ryan and Lopez, Brett T},
-  journal={IEEE International Conference on Robotics and Automation (ICRA)},
-  year={2023}
+  journal={2023 IEEE International Conference on Robotics and Automation (ICRA)},
+  year={2023},
+  pages={3983-3989},
+  doi={10.1109/ICRA48891.2023.10160508}
 }
 ```
 
