@@ -11,35 +11,35 @@
 ###########################################################
 
 dlio:
+  ros__parameters:
 
-  version: 1.1.1
+    version: 1.1.1
 
-  adaptive: true
+    adaptive: true
 
-  pointcloud:
-    deskew: true
-    voxelize: true
+    pointcloud:
+      deskew: true
+      voxelize: true
 
-  imu:
-    calibration: true
-    intrinsics:
-      accel:
-        bias: [ 0.0, 0.0, 0.0 ]
-        sm:   [ 1.,  0.,  0.,
-                0.,  1.,  0.,
-                0.,  0.,  1. ]
-      gyro:
-        bias: [ 0.0, 0.0, 0.0 ]
+    imu:
+      calibration: true
+      intrinsics:
+        accel:
+          bias: [ 0.0, 0.0, 0.0 ]
+          sm:   [ 1.,  0.,  0.,
+                  0.,  1.,  0.,
+                  0.,  0.,  1. ]
+        gyro:
+          bias: [ 0.0, 0.0, 0.0 ]
 
-  extrinsics:
-    baselink2imu:
-      t: [ 0.006253, -0.011775, 0.007645 ]
-      R: [ 1.,  0.,  0.,
-           0.,  1.,  0.,
-           0.,  0.,  1. ]
-    baselink2lidar:
-      t: [ 0.,  0.,  0. ]
-      R: [ 1.,  0.,  0.,
-           0.,  1.,  0.,
-           0.,  0.,  1. ]
-
+    extrinsics:
+      baselink2imu:
+        t: [ 0.006253, -0.011775, 0.007645 ]
+        R: [ 1.,  0.,  0.,
+            0.,  1.,  0.,
+            0.,  0.,  1. ]
+      baselink2lidar:
+        t: [ 0.,  0.,  0. ]
+        R: [ 1.,  0.,  0.,
+            0.,  1.,  0.,
+            0.,  0.,  1. ]

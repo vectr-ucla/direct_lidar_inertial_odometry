@@ -44,7 +44,7 @@
 
 #pragma once
 
-#include <boost/shared_ptr.hpp>
+#include <memory>
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
 #include <pcl/kdtree/kdtree_flann.h>
@@ -59,14 +59,14 @@ class KdTreeFLANN
 {
 public:
 
-  typedef typename pcl::PointCloud<PointT> PointCloud;
-  typedef typename pcl::PointCloud<PointT>::Ptr PointCloudPtr;
-  typedef typename pcl::PointCloud<PointT>::ConstPtr PointCloudConstPtr;
+  using PointCloud = pcl::PointCloud<PointT>;
+  using PointCloudPtr = typename pcl::PointCloud<PointT>::Ptr;
+  using PointCloudConstPtr = typename pcl::PointCloud<PointT>::ConstPtr;
 
-  typedef boost::shared_ptr<KdTreeFLANN<PointT>> Ptr;
-  typedef boost::shared_ptr<const KdTreeFLANN<PointT>> ConstPtr;
-  typedef boost::shared_ptr<std::vector<int>> IndicesPtr;
-  typedef boost::shared_ptr<const std::vector<int>> IndicesConstPtr;
+  using Ptr = std::shared_ptr<KdTreeFLANN<PointT>>;
+  using ConstPtr = std::shared_ptr<const KdTreeFLANN<PointT>>;
+  using IndicesPtr = std::shared_ptr<std::vector<int>>;
+  using IndicesConstPtr = std::shared_ptr<const std::vector<int>>;
 
   KdTreeFLANN (bool sorted = false);
 

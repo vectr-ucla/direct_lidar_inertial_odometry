@@ -12,11 +12,37 @@
 
 #include "dlio/dlio.h"
 
-class dlio::OdomNode {
+// ROS
+#include "rclcpp/rclcpp.hpp"
+#include <nav_msgs/msg/odometry.hpp>
+#include <geometry_msgs/msg/pose_stamped.hpp>
+#include <geometry_msgs/msg/pose_array.hpp>
+#include <nav_msgs/msg/path.hpp>
+#include <sensor_msgs/msg/imu.hpp>
+#include <sensor_msgs/msg/point_cloud2.hpp>
+#include <tf2_ros/transform_broadcaster.h>
+
+// BOOST
+#include <boost/format.hpp>
+#include <boost/circular_buffer.hpp>
+#include <boost/algorithm/string.hpp>
+#include <boost/range/adaptor/indexed.hpp>
+#include <boost/range/adaptor/adjacent_filtered.hpp>
+
+// PCL
+#include <pcl/filters/crop_box.h>
+#include <pcl/filters/voxel_grid.h>
+#include <pcl/filters/statistical_outlier_removal.h>
+#include <pcl/io/pcd_io.h>
+#include <pcl/surface/concave_hull.h>
+#include <pcl/surface/convex_hull.h>
+#include <pcl_conversions/pcl_conversions.h>
+
+class dlio::OdomNode: public rclcpp::Node {
 
 public:
 
-  OdomNode(ros::NodeHandle node_handle);
+  OdomNode();
   ~OdomNode();
 
   void start();
@@ -28,17 +54,17 @@ private:
 
   void getParams();
 
-  void callbackPointCloud(const sensor_msgs::PointCloud2ConstPtr& pc);
-  void callbackImu(const sensor_msgs::Imu::ConstPtr& imu);
+  void callbackPointCloud(const sensor_msgs::msg::PointCloud2::SharedPtr pc);
+  void callbackImu(const sensor_msgs::msg::Imu::SharedPtr imu);
 
-  void publishPose(const ros::TimerEvent& e);
+  void publishPose();
 
   void publishToROS(pcl::PointCloud<PointType>::ConstPtr published_cloud, Eigen::Matrix4f T_cloud);
   void publishCloud(pcl::PointCloud<PointType>::ConstPtr published_cloud, Eigen::Matrix4f T_cloud);
   void publishKeyframe(std::pair<std::pair<Eigen::Vector3f, Eigen::Quaternionf>,
-                       pcl::PointCloud<PointType>::ConstPtr> kf, ros::Time timestamp);
+                       pcl::PointCloud<PointType>::ConstPtr> kf, rclcpp::Time timestamp);
 
-  void getScanFromROS(const sensor_msgs::PointCloud2ConstPtr& pc);
+  void getScanFromROS(const sensor_msgs::msg::PointCloud2::SharedPtr& pc);
   void preprocessPoints();
   void deskewPointcloud();
   void initializeInputTarget();
@@ -70,7 +96,7 @@ private:
   void computeSpaciousness();
   void computeDensity();
 
-  sensor_msgs::Imu::Ptr transformImu(const sensor_msgs::Imu::ConstPtr& imu);
+  sensor_msgs::msg::Imu::SharedPtr transformImu(const sensor_msgs::msg::Imu::SharedPtr& imu);
 
   void updateKeyframes();
   void computeConvexHull();
@@ -82,26 +108,29 @@ private:
 
   void debug();
 
-  ros::NodeHandle nh;
-  ros::Timer publish_timer;
+  rclcpp::TimerBase::SharedPtr publish_timer;
 
   // Subscribers
-  ros::Subscriber lidar_sub;
-  ros::Subscriber imu_sub;
+  rclcpp::Subscription<sensor_msgs::msg::PointCloud2>::SharedPtr lidar_sub;
+  rclcpp::Subscription<sensor_msgs::msg::Imu>::SharedPtr imu_sub;
+  rclcpp::CallbackGroup::SharedPtr lidar_cb_group, imu_cb_group;
 
   // Publishers
-  ros::Publisher odom_pub;
-  ros::Publisher pose_pub;
-  ros::Publisher path_pub;
-  ros::Publisher kf_pose_pub;
-  ros::Publisher kf_cloud_pub;
-  ros::Publisher deskewed_pub;
+  rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr odom_pub;
+  rclcpp::Publisher<geometry_msgs::msg::PoseStamped>::SharedPtr pose_pub;
+  rclcpp::Publisher<nav_msgs::msg::Path>::SharedPtr path_pub;
+  rclcpp::Publisher<geometry_msgs::msg::PoseArray>::SharedPtr kf_pose_pub;
+  rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr kf_cloud_pub;
+  rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr deskewed_pub;
+
+  // TF
+  std::shared_ptr<tf2_ros::TransformBroadcaster> br;
 
   // ROS Msgs
-  nav_msgs::Odometry odom_ros;
-  geometry_msgs::PoseStamped pose_ros;
-  nav_msgs::Path path_ros;
-  geometry_msgs::PoseArray kf_pose_ros;
+  nav_msgs::msg::Odometry odom_ros;
+  geometry_msgs::msg::PoseStamped pose_ros;
+  nav_msgs::msg::Path path_ros;
+  geometry_msgs::msg::PoseArray kf_pose_ros;
 
   // Flags
   std::atomic<bool> dlio_initialized;
@@ -126,7 +155,7 @@ private:
   // Keyframes
   std::vector<std::pair<std::pair<Eigen::Vector3f, Eigen::Quaternionf>,
                         pcl::PointCloud<PointType>::ConstPtr>> keyframes;
-  std::vector<ros::Time> keyframe_timestamps;
+  std::vector<rclcpp::Time> keyframe_timestamps;
   std::vector<std::shared_ptr<const nano_gicp::CovarianceList>> keyframe_normals;
   std::vector<Eigen::Matrix4f, Eigen::aligned_allocator<Eigen::Matrix4f>> keyframe_transformations;
   std::mutex keyframes_mutex;
@@ -173,7 +202,7 @@ private:
   std::mutex main_loop_running_mutex;
 
   // Timestamps
-  ros::Time scan_header_stamp;
+  rclcpp::Time scan_header_stamp;
   double scan_stamp;
   double prev_scan_stamp;
   double scan_dt;
@@ -206,7 +235,7 @@ private:
   }; Extrinsics extrinsics;
 
   // IMU
-  ros::Time imu_stamp;
+  rclcpp::Time imu_stamp;
   double first_imu_stamp;
   double prev_imu_stamp;
   double imu_dp, imu_dq_deg;
