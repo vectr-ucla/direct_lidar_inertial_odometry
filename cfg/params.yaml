@@ -11,62 +11,63 @@
 ###########################################################
 
 dlio:
+  ros__parameters:
 
-  frames:
-    odom: odom
-    baselink: base_link
-    lidar: lidar
-    imu: imu
+    frames:
+      odom: odom
+      baselink: base_link
+      lidar: lidar
+      imu: imu
 
-  map:
-    waitUntilMove: true
-    dense:
-      filtered: false
-    sparse:
-      frequency: 1.0
-      leafSize: 0.25
+    map:
+      waitUntilMove: true
+      dense:
+        filtered: false
+      sparse:
+        frequency: 1.0
+        leafSize: 0.25
 
-  odom:
+    odom:
 
-    gravity: 9.80665
+      gravity: 9.80665
 
-    imu:
-      approximateGravity: false
-      calibration:
-        gyro: true
-        accel: true
-        time: 3
-      bufferSize: 5000
+      imu:
+        approximateGravity: false
+        calibration:
+          gyro: true
+          accel: true
+          time: 3
+        bufferSize: 5000
 
-    preprocessing:
-      cropBoxFilter:
-        size: 1.0
-      voxelFilter:
-        res: 0.25
+      preprocessing:
+        cropBoxFilter:
+          size: 1.0
+        voxelFilter:
+          res: 0.25
 
-    keyframe:
-      threshD: 1.0
-      threshR: 45.0
-
-    submap:
       keyframe:
-        knn: 10
-        kcv: 10
-        kcc: 10
-    gicp:
-      minNumPoints: 64
-      kCorrespondences: 16
-      maxCorrespondenceDistance: 0.5
-      maxIterations: 32
-      transformationEpsilon: 0.01
-      rotationEpsilon: 0.01
-      initLambdaFactor: 1e-9
+        threshD: 1.0
+        threshR: 45.0
 
-    geo:
-      Kp: 4.5
-      Kv: 11.25
-      Kq: 4.0
-      Kab: 2.25
-      Kgb: 1.0
-      abias_max: 5.0
-      gbias_max: 0.5
+      submap:
+        keyframe:
+          knn: 10
+          kcv: 10
+          kcc: 10
+      gicp:
+        minNumPoints: 64
+        kCorrespondences: 16
+        maxCorrespondenceDistance: 0.5
+        maxIterations: 32
+        transformationEpsilon: 0.01
+        rotationEpsilon: 0.01
+        initLambdaFactor: 1e-9
+
+      geo:
+        Kp: 4.5
+        Kv: 11.25
+        Kq: 4.0
+        Kab: 2.25
+        Kgb: 1.0
+        abias_max: 5.0
+        gbias_max: 0.5
