@@ -111,7 +111,7 @@ We thank the authors of the [FastGICP](https://github.com/SMRT-AIST/fast_gicp) a
 
 We would also like to thank Helene Levy and David Thorne for their help with data collection.
 
-Many thanks to @shrijitsingh99 for [porting DLIO to ROS2](https://github.com/vectr-ucla/direct_lidar_inertial_odometry/pull/16)!
+Many thanks to [@shrijitsingh99](https://github.com/shrijitsingh99) for [porting DLIO to ROS2](https://github.com/vectr-ucla/direct_lidar_inertial_odometry/pull/16)!
 
 ## License
 This work is licensed under the terms of the MIT license.
