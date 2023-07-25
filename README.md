@@ -11,8 +11,8 @@ DLIO is a new lightweight LiDAR-inertial odometry algorithm with a novel coarse-
 
 ## Instructions
 
-### Sensor Setup
-DLIO has been extensively tested using a variety of sensor configurations and currently supports Ouster, Velodyne, and Hesai LiDARs. The point cloud should be of input type `sensor_msgs::PointCloud2` and the 6-axis IMU input type of `sensor_msgs::Imu`.
+### Sensor Setup & Compatibility
+DLIO has been extensively tested using a variety of sensor configurations and currently supports Ouster, Velodyne, Hesai, and Livox LiDARs. The point cloud should be of input type `sensor_msgs::PointCloud2` and the 6-axis IMU input type of `sensor_msgs::Imu`. For Livox sensors specifically, please use the latest [`livox_ros_driver2`](https://github.com/Livox-SDK/livox_ros_driver2) package with `xfer_format: 1` and point cloud of input type `livox_ros_driver2::CustomMsg` (see [here](https://github.com/vectr-ucla/direct_lidar_inertial_odometry/issues/5) for more information).
 
 For best performance, extrinsic calibration between the LiDAR/IMU sensors and the robot's center-of-gravity should be inputted into `cfg/dlio.yaml`. If the exact values of these are unavailable, a rough LiDAR-to-IMU extrinsics can also be used (note however that performance will be degraded).
 
@@ -35,7 +35,7 @@ The following has been verified to be compatible, although other configurations 
 sudo apt install libomp-dev libpcl-dev libeigen3-dev
 ```
 
-DLIO currently only supports ROS1, but we welcome any contributions by the community to add ROS2 support!
+DLIO supports ROS1 by default, and ROS2 using the `feature/ros2` branch.
 
 ### Compiling
 Compile using the [`catkin_tools`](https://catkin-tools.readthedocs.io/en/latest/) package via:
@@ -55,6 +55,17 @@ roslaunch direct_lidar_inertial_odometry dlio.launch \
   pointcloud_topic:=/robot/lidar \
   imu_topic:=/robot/imu
 ```
+
+for Ouster, Velodyne, or Hesai sensors, or 
+
+```sh
+roslaunch direct_lidar_inertial_odometry dlio.launch \
+  rviz:={true, false} \
+  livox_topic:=/livox/lidar \
+  imu_topic:=/robot/imu
+```
+
+for Livox sensors.
 
 Be sure to change the topic names to your corresponding topics. Alternatively, edit the launch file directly if desired. If successful, you should see the following output in your terminal:
 <br>
@@ -99,6 +110,8 @@ We thank the authors of the [FastGICP](https://github.com/SMRT-AIST/fast_gicp) a
 - Jose Luis Blanco and Pranjal Kumar Rai, “NanoFLANN: a C++ Header-Only Fork of FLANN, A Library for Nearest Neighbor (NN) with KD-Trees,” https://github.com/jlblancoc/nanoflann, 2014.
 
 We would also like to thank Helene Levy and David Thorne for their help with data collection.
+
+Many thanks to @shrijitsingh99 for [porting DLIO to ROS2](https://github.com/vectr-ucla/direct_lidar_inertial_odometry/pull/16)!
 
 ## License
 This work is licensed under the terms of the MIT license.
