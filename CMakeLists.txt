@@ -10,7 +10,7 @@
 #                                                         #
 ###########################################################
 
-cmake_minimum_required(VERSION 3.12.4)
+cmake_minimum_required(VERSION 3.10.2)
 project(direct_lidar_inertial_odometry)
 
 add_compile_options(-std=c++14)

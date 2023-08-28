@@ -1696,13 +1696,14 @@ void dlio::OdomNode::buildSubmap(State vehicle_state) {
   // get indices for top kNN for concave hull
   this->pushSubmapIndices(concave_ds, this->submap_kcc_, this->keyframe_concave);
 
+  // concatenate all submap clouds and normals
+  std::sort(this->submap_kf_idx_curr.begin(), this->submap_kf_idx_curr.end());
+  auto last = std::unique(this->submap_kf_idx_curr.begin(), this->submap_kf_idx_curr.end());
+  this->submap_kf_idx_curr.erase(last, this->submap_kf_idx_curr.end());
+
   // sort current and previous submap kf list of indices
   std::sort(this->submap_kf_idx_curr.begin(), this->submap_kf_idx_curr.end());
   std::sort(this->submap_kf_idx_prev.begin(), this->submap_kf_idx_prev.end());
-  
-  // remove duplicate indices
-  auto last = std::unique(this->submap_kf_idx_curr.begin(), this->submap_kf_idx_curr.end());
-  this->submap_kf_idx_curr.erase(last, this->submap_kf_idx_curr.end());
 
   // check if submap has changed from previous iteration
   if (this->submap_kf_idx_curr != this->submap_kf_idx_prev){
@@ -1869,121 +1870,121 @@ void dlio::OdomNode::debug() {
     std::accumulate(this->cpu_percents.begin(), this->cpu_percents.end(), 0.0) / this->cpu_percents.size();
 
   // Print to terminal
-  printf("\033[2J\033[1;1H");
+  // printf("\033[2J\033[1;1H");
 
-  std::cout << std::endl
-            << "+-------------------------------------------------------------------+" << std::endl;
-  std::cout << "|               Direct LiDAR-Inertial Odometry v" << this->version_  << "               |"
-            << std::endl;
-  std::cout << "+-------------------------------------------------------------------+" << std::endl;
+  // std::cout << std::endl
+  //           << "+-------------------------------------------------------------------+" << std::endl;
+  // std::cout << "|               Direct LiDAR-Inertial Odometry v" << this->version_  << "               |"
+  //           << std::endl;
+  // std::cout << "+-------------------------------------------------------------------+" << std::endl;
 
-  std::time_t curr_time = this->scan_stamp;
-  std::string asc_time = std::asctime(std::localtime(&curr_time)); asc_time.pop_back();
-  std::cout << "| " << std::left << asc_time;
-  std::cout << std::right << std::setfill(' ') << std::setw(42)
-    << "Elapsed Time: " + to_string_with_precision(this->elapsed_time, 2) + " seconds "
-    << "|" << std::endl;
+  // std::time_t curr_time = this->scan_stamp;
+  // std::string asc_time = std::asctime(std::localtime(&curr_time)); asc_time.pop_back();
+  // std::cout << "| " << std::left << asc_time;
+  // std::cout << std::right << std::setfill(' ') << std::setw(42)
+  //   << "Elapsed Time: " + to_string_with_precision(this->elapsed_time, 2) + " seconds "
+  //   << "|" << std::endl;
 
-  if ( !this->cpu_type.empty() ) {
-    std::cout << "| " << std::left << std::setfill(' ') << std::setw(66)
-      << this->cpu_type + " x " + std::to_string(this->numProcessors)
-      << "|" << std::endl;
-  }
+  // if ( !this->cpu_type.empty() ) {
+  //   std::cout << "| " << std::left << std::setfill(' ') << std::setw(66)
+  //     << this->cpu_type + " x " + std::to_string(this->numProcessors)
+  //     << "|" << std::endl;
+  // }
 
-  if (this->sensor == dlio::SensorType::OUSTER) {
-    std::cout << "| " << std::left << std::setfill(' ') << std::setw(66)
-      << "Sensor Rates: Ouster @ " + to_string_with_precision(avg_lidar_rate, 2)
-                                   + " Hz, IMU @ " + to_string_with_precision(avg_imu_rate, 2) + " Hz"
-      << "|" << std::endl;
-  } else if (this->sensor == dlio::SensorType::VELODYNE) {
-    std::cout << "| " << std::left << std::setfill(' ') << std::setw(66)
-      << "Sensor Rates: Velodyne @ " + to_string_with_precision(avg_lidar_rate, 2)
-                                     + " Hz, IMU @ " + to_string_with_precision(avg_imu_rate, 2) + " Hz"
-      << "|" << std::endl;
-  } else if (this->sensor == dlio::SensorType::HESAI) {
-    std::cout << "| " << std::left << std::setfill(' ') << std::setw(66)
-      << "Sensor Rates: Hesai @ " + to_string_with_precision(avg_lidar_rate, 2)
-                                  + " Hz, IMU @ " + to_string_with_precision(avg_imu_rate, 2) + " Hz"
-      << "|" << std::endl;
-  } else {
-    std::cout << "| " << std::left << std::setfill(' ') << std::setw(66)
-      << "Sensor Rates: Unknown LiDAR @ " + to_string_with_precision(avg_lidar_rate, 2)
-                                          + " Hz, IMU @ " + to_string_with_precision(avg_imu_rate, 2) + " Hz"
-      << "|" << std::endl;
-  }
+  // if (this->sensor == dlio::SensorType::OUSTER) {
+  //   std::cout << "| " << std::left << std::setfill(' ') << std::setw(66)
+  //     << "Sensor Rates: Ouster @ " + to_string_with_precision(avg_lidar_rate, 2)
+  //                                  + " Hz, IMU @ " + to_string_with_precision(avg_imu_rate, 2) + " Hz"
+  //     << "|" << std::endl;
+  // } else if (this->sensor == dlio::SensorType::VELODYNE) {
+  //   std::cout << "| " << std::left << std::setfill(' ') << std::setw(66)
+  //     << "Sensor Rates: Velodyne @ " + to_string_with_precision(avg_lidar_rate, 2)
+  //                                    + " Hz, IMU @ " + to_string_with_precision(avg_imu_rate, 2) + " Hz"
+  //     << "|" << std::endl;
+  // } else if (this->sensor == dlio::SensorType::HESAI) {
+  //   std::cout << "| " << std::left << std::setfill(' ') << std::setw(66)
+  //     << "Sensor Rates: Hesai @ " + to_string_with_precision(avg_lidar_rate, 2)
+  //                                 + " Hz, IMU @ " + to_string_with_precision(avg_imu_rate, 2) + " Hz"
+  //     << "|" << std::endl;
+  // } else {
+  //   std::cout << "| " << std::left << std::setfill(' ') << std::setw(66)
+  //     << "Sensor Rates: Unknown LiDAR @ " + to_string_with_precision(avg_lidar_rate, 2)
+  //                                         + " Hz, IMU @ " + to_string_with_precision(avg_imu_rate, 2) + " Hz"
+  //     << "|" << std::endl;
+  // }
 
-  std::cout << "|===================================================================|" << std::endl;
+  // std::cout << "|===================================================================|" << std::endl;
 
-  std::cout << "| " << std::left << std::setfill(' ') << std::setw(66)
-    << "Position     {W}  [xyz] :: " + to_string_with_precision(this->state.p[0], 4) + " "
-                                + to_string_with_precision(this->state.p[1], 4) + " "
-                                + to_string_with_precision(this->state.p[2], 4)
-    << "|" << std::endl;
-  std::cout << "| " << std::left << std::setfill(' ') << std::setw(66)
-    << "Orientation  {W} [wxyz] :: " + to_string_with_precision(this->state.q.w(), 4) + " "
-                                + to_string_with_precision(this->state.q.x(), 4) + " "
-                                + to_string_with_precision(this->state.q.y(), 4) + " "
-                                + to_string_with_precision(this->state.q.z(), 4)
-    << "|" << std::endl;
-  std::cout << "| " << std::left << std::setfill(' ') << std::setw(66)
-    << "Lin Velocity {B}  [xyz] :: " + to_string_with_precision(this->state.v.lin.b[0], 4) + " "
-                                + to_string_with_precision(this->state.v.lin.b[1], 4) + " "
-                                + to_string_with_precision(this->state.v.lin.b[2], 4)
-    << "|" << std::endl;
-  std::cout << "| " << std::left << std::setfill(' ') << std::setw(66)
-    << "Ang Velocity {B}  [xyz] :: " + to_string_with_precision(this->state.v.ang.b[0], 4) + " "
-                                + to_string_with_precision(this->state.v.ang.b[1], 4) + " "
-                                + to_string_with_precision(this->state.v.ang.b[2], 4)
-    << "|" << std::endl;
-  std::cout << "| " << std::left << std::setfill(' ') << std::setw(66)
-    << "Accel Bias        [xyz] :: " + to_string_with_precision(this->state.b.accel[0], 8) + " "
-                                + to_string_with_precision(this->state.b.accel[1], 8) + " "
-                                + to_string_with_precision(this->state.b.accel[2], 8)
-    << "|" << std::endl;
-  std::cout << "| " << std::left << std::setfill(' ') << std::setw(66)
-    << "Gyro Bias         [xyz] :: " + to_string_with_precision(this->state.b.gyro[0], 8) + " "
-                                + to_string_with_precision(this->state.b.gyro[1], 8) + " "
-                                + to_string_with_precision(this->state.b.gyro[2], 8)
-    << "|" << std::endl;
+  // std::cout << "| " << std::left << std::setfill(' ') << std::setw(66)
+  //   << "Position     {W}  [xyz] :: " + to_string_with_precision(this->state.p[0], 4) + " "
+  //                               + to_string_with_precision(this->state.p[1], 4) + " "
+  //                               + to_string_with_precision(this->state.p[2], 4)
+  //   << "|" << std::endl;
+  // std::cout << "| " << std::left << std::setfill(' ') << std::setw(66)
+  //   << "Orientation  {W} [wxyz] :: " + to_string_with_precision(this->state.q.w(), 4) + " "
+  //                               + to_string_with_precision(this->state.q.x(), 4) + " "
+  //                               + to_string_with_precision(this->state.q.y(), 4) + " "
+  //                               + to_string_with_precision(this->state.q.z(), 4)
+  //   << "|" << std::endl;
+  // std::cout << "| " << std::left << std::setfill(' ') << std::setw(66)
+  //   << "Lin Velocity {B}  [xyz] :: " + to_string_with_precision(this->state.v.lin.b[0], 4) + " "
+  //                               + to_string_with_precision(this->state.v.lin.b[1], 4) + " "
+  //                               + to_string_with_precision(this->state.v.lin.b[2], 4)
+  //   << "|" << std::endl;
+  // std::cout << "| " << std::left << std::setfill(' ') << std::setw(66)
+  //   << "Ang Velocity {B}  [xyz] :: " + to_string_with_precision(this->state.v.ang.b[0], 4) + " "
+  //                               + to_string_with_precision(this->state.v.ang.b[1], 4) + " "
+  //                               + to_string_with_precision(this->state.v.ang.b[2], 4)
+  //   << "|" << std::endl;
+  // std::cout << "| " << std::left << std::setfill(' ') << std::setw(66)
+  //   << "Accel Bias        [xyz] :: " + to_string_with_precision(this->state.b.accel[0], 8) + " "
+  //                               + to_string_with_precision(this->state.b.accel[1], 8) + " "
+  //                               + to_string_with_precision(this->state.b.accel[2], 8)
+  //   << "|" << std::endl;
+  // std::cout << "| " << std::left << std::setfill(' ') << std::setw(66)
+  //   << "Gyro Bias         [xyz] :: " + to_string_with_precision(this->state.b.gyro[0], 8) + " "
+  //                               + to_string_with_precision(this->state.b.gyro[1], 8) + " "
+  //                               + to_string_with_precision(this->state.b.gyro[2], 8)
+  //   << "|" << std::endl;
 
-  std::cout << "|                                                                   |" << std::endl;
+  // std::cout << "|                                                                   |" << std::endl;
 
-  std::cout << "| " << std::left << std::setfill(' ') << std::setw(66)
-    << "Distance Traveled  :: " + to_string_with_precision(length_traversed, 4) + " meters"
-    << "|" << std::endl;
-  std::cout << "| " << std::left << std::setfill(' ') << std::setw(66)
-    << "Distance to Origin :: "
-      + to_string_with_precision( sqrt(pow(this->state.p[0]-this->origin[0],2) +
-                                       pow(this->state.p[1]-this->origin[1],2) +
-                                       pow(this->state.p[2]-this->origin[2],2)), 4) + " meters"
-    << "|" << std::endl;
-  std::cout << "| " << std::left << std::setfill(' ') << std::setw(66)
-    << "Registration       :: keyframes: " + std::to_string(this->keyframes.size()) + ", "
-                               + "deskewed points: " + std::to_string(this->deskew_size)
-    << "|" << std::endl;
-  std::cout << "|                                                                   |" << std::endl;
+  // std::cout << "| " << std::left << std::setfill(' ') << std::setw(66)
+  //   << "Distance Traveled  :: " + to_string_with_precision(length_traversed, 4) + " meters"
+  //   << "|" << std::endl;
+  // std::cout << "| " << std::left << std::setfill(' ') << std::setw(66)
+  //   << "Distance to Origin :: "
+  //     + to_string_with_precision( sqrt(pow(this->state.p[0]-this->origin[0],2) +
+  //                                      pow(this->state.p[1]-this->origin[1],2) +
+  //                                      pow(this->state.p[2]-this->origin[2],2)), 4) + " meters"
+  //   << "|" << std::endl;
+  // std::cout << "| " << std::left << std::setfill(' ') << std::setw(66)
+  //   << "Registration       :: keyframes: " + std::to_string(this->keyframes.size()) + ", "
+  //                              + "deskewed points: " + std::to_string(this->deskew_size)
+  //   << "|" << std::endl;
+  // std::cout << "|                                                                   |" << std::endl;
 
-  std::cout << std::right << std::setprecision(2) << std::fixed;
-  std::cout << "| Computation Time :: "
-    << std::setfill(' ') << std::setw(6) << this->comp_times.back()*1000. << " ms    // Avg: "
-    << std::setw(6) << avg_comp_time*1000. << " / Max: "
-    << std::setw(6) << *std::max_element(this->comp_times.begin(), this->comp_times.end())*1000.
-    << "     |" << std::endl;
-  std::cout << "| Cores Utilized   :: "
-    << std::setfill(' ') << std::setw(6) << (cpu_percent/100.) * this->numProcessors << " cores // Avg: "
-    << std::setw(6) << (avg_cpu_usage/100.) * this->numProcessors << " / Max: "
-    << std::setw(6) << (*std::max_element(this->cpu_percents.begin(), this->cpu_percents.end()) / 100.)
-                       * this->numProcessors
-    << "     |" << std::endl;
-  std::cout << "| CPU Load         :: "
-    << std::setfill(' ') << std::setw(6) << cpu_percent << " %     // Avg: "
-    << std::setw(6) << avg_cpu_usage << " / Max: "
-    << std::setw(6) << *std::max_element(this->cpu_percents.begin(), this->cpu_percents.end())
-    << "     |" << std::endl;
-  std::cout << "| " << std::left << std::setfill(' ') << std::setw(66)
-    << "RAM Allocation   :: " + to_string_with_precision(resident_set/1000., 2) + " MB"
-    << "|" << std::endl;
+  // std::cout << std::right << std::setprecision(2) << std::fixed;
+  // std::cout << "| Computation Time :: "
+  //   << std::setfill(' ') << std::setw(6) << this->comp_times.back()*1000. << " ms    // Avg: "
+  //   << std::setw(6) << avg_comp_time*1000. << " / Max: "
+  //   << std::setw(6) << *std::max_element(this->comp_times.begin(), this->comp_times.end())*1000.
+  //   << "     |" << std::endl;
+  // std::cout << "| Cores Utilized   :: "
+  //   << std::setfill(' ') << std::setw(6) << (cpu_percent/100.) * this->numProcessors << " cores // Avg: "
+  //   << std::setw(6) << (avg_cpu_usage/100.) * this->numProcessors << " / Max: "
+  //   << std::setw(6) << (*std::max_element(this->cpu_percents.begin(), this->cpu_percents.end()) / 100.)
+  //                      * this->numProcessors
+  //   << "     |" << std::endl;
+  // std::cout << "| CPU Load         :: "
+  //   << std::setfill(' ') << std::setw(6) << cpu_percent << " %     // Avg: "
+  //   << std::setw(6) << avg_cpu_usage << " / Max: "
+  //   << std::setw(6) << *std::max_element(this->cpu_percents.begin(), this->cpu_percents.end())
+  //   << "     |" << std::endl;
+  // std::cout << "| " << std::left << std::setfill(' ') << std::setw(66)
+  //   << "RAM Allocation   :: " + to_string_with_precision(resident_set/1000., 2) + " MB"
+  //   << "|" << std::endl;
 
-  std::cout << "+-------------------------------------------------------------------+" << std::endl;
+  // std::cout << "+-------------------------------------------------------------------+" << std::endl;
 
 }

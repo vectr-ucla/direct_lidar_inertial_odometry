@@ -1,0 +1,18 @@
+# .dockerignore
+.git/
+.github/
+.vscode/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.log
+*.swp
+*.bak
+*~
+*.tmp
+*.temp
+*.db
+*.sublime-*
+README.md
+codebase-diagram.svg

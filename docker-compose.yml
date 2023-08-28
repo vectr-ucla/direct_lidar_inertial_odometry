@@ -1,0 +1,25 @@
+version: '3.8'
+
+services:
+  fastslam2:           # <-- YOUR TODO: change to name of your repository
+    # depends_on: 
+    #   - master          
+    #   - <package>          # <-- YOUR TODO: change dependencies to other packages
+    build:
+      context: .  
+      dockerfile: Dockerfile
+    image: direct_lidar_inertial_odometry:latest        # <-- YOUR TODO: change to name of your repository
+    restart: unless-stopped
+    environment:
+      - PACKAGE_NAME=direct_lidar_inertial_odometry     # <-- YOUR TODO: change to name of your repository
+      # - ROS_MASTER_URI=http://master:11311 
+    volumes:
+      - ./:/ws/src/direct_lidar_inertial_odometry       # <-- YOUR TODO: change to name of your repository
+      # - ./fs_msgs:/ws/src/fs_msgs
+    # entrypoint: chmod +x /ws/src/fastslam2/docker-entrypoint.sh && /ws/src/fastslam2/docker-entrypoint.sh  # <-- YOUR TODO: change to name of your repository
+    entrypoint: /ws/src/direct_lidar_inertial_odometry/docker-entrypoint.sh # <-- YOUR TODO: change to name of your repository
+    command: sh -c "while true; do sleep 1; done"    
+
+# networks:
+#   ros_network:
+#     driver: bridge

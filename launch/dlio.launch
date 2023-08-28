@@ -12,11 +12,13 @@
 
 <launch>
 
+  
+
   <arg name="robot_namespace" default="robot"/>
   <arg name="rviz" default="false"/>
 
-  <arg name="pointcloud_topic" default="lidar"/>
-  <arg name="imu_topic" default="imu"/>
+  <arg name="pointcloud_topic" default="/os_cloud_node/points"/>
+  <arg name="imu_topic" default="/os_cloud_node/imu"/>
 
   <!-- DLIO Odometry Node -->
   <node ns="$(arg robot_namespace)" name="dlio_odom" pkg="direct_lidar_inertial_odometry" type="dlio_odom_node" output="screen" clear_params="true">

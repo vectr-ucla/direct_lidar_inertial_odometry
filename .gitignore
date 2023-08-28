@@ -1,0 +1,52 @@
+# .gitignore
+
+bags/*.bag
+
+# Do not commit secrets
+.env
+
+# Ignore build and install directories
+build/
+devel/
+install/
+log/
+
+# Ignore Python cache files and artifacts
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Ignore C++ object files and libraries
+*.o
+*.a
+*.so
+*.lo
+
+# Ignore ROS and Gazebo log files
+*.db
+*.log
+
+# Ignore editor-specific files
+.vscode/
+*.swp
+*.swo
+*.swn
+*.bak
+*~
+*.sublime-*
+
+# Ignore temporary files
+*.tmp
+*.temp
+*.bak
+
+# Ignore Docker-related files
+# .dockerignore
+.docker/
+
+# Ignore GitHub Actions cache
+.github/cache/
+
+# MACOS
+.DS_Store
