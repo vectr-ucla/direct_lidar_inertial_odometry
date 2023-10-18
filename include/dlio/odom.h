@@ -284,6 +284,8 @@ private:
 
   bool deskew_;
 
+  bool deskew_only_;
+
   double gravity_;
 
   bool adaptive_params_;

@@ -27,6 +27,7 @@ dlio:
       leafSize: 0.25
 
   odom:
+    deskewing_only: true
 
     gravity: 9.80665
 
