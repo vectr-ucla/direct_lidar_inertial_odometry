@@ -1,7 +1,7 @@
 version: '3.8'
 
 services:
-  fastslam2:           # <-- YOUR TODO: change to name of your repository
+  direct_lidar_inertial_odometry:           # <-- YOUR TODO: change to name of your repository
     # depends_on: 
     #   - master          
     #   - <package>          # <-- YOUR TODO: change dependencies to other packages
