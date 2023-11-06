@@ -11,6 +11,7 @@ if [ ! -e $CONTAINER_INITIALIZED ]; then
     catkin init
     #catkin config
     catkin build
+    source "/ws/devel/setup.bash"
 else
     echo "-- Not first container startup --"
     source "/ws/devel/setup.bash"
