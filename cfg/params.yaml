@@ -70,3 +70,6 @@ dlio:
       Kgb: 1.0
       abias_max: 5.0
       gbias_max: 0.5
+  
+  misc:
+    publish_transforms: false

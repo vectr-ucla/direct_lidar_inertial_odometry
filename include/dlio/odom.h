@@ -332,4 +332,6 @@ private:
   double geo_abias_max_;
   double geo_gbias_max_;
 
+  bool publish_transforms;
+
 };
