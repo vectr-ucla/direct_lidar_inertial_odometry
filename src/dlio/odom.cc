@@ -26,6 +26,8 @@ dlio::OdomNode::OdomNode(ros::NodeHandle node_handle) : nh(node_handle) {
   this->deskew_status = false;
   this->deskew_size = 0;
 
+  this->stateHasBeenUpdated = false;
+
   this->lidar_sub = this->nh.subscribe("pointcloud", 1,
       &dlio::OdomNode::callbackPointCloud, this, ros::TransportHints().tcpNoDelay());
   this->imu_sub = this->nh.subscribe("imu", 1000,
@@ -316,7 +318,9 @@ void dlio::OdomNode::start() {
 }
 
 void dlio::OdomNode::publishPose(const ros::TimerEvent& e) {
-
+  std::cout << this->stateHasBeenUpdated << std::endl;
+  if (!this->imu_calibrated || !this->dlio_initialized)
+    return;
   // nav_msgs::Odometry
   this->odom_ros.header.stamp = this->imu_stamp;
   this->odom_ros.header.frame_id = this->odom_frame;
@@ -950,6 +954,7 @@ void dlio::OdomNode::callbackImu(const sensor_msgs::Imu::ConstPtr& imu_raw) {
 
       this->imu_calibrated = true;
 
+
     }
 
   } else {
@@ -1345,6 +1350,8 @@ void dlio::OdomNode::updateState() {
   this->geo.prev_p = this->state.p;
   this->geo.prev_q = this->state.q;
   this->geo.prev_vel = this->state.v.lin.w;
+
+  this->stateHasBeenUpdated = true;
 
 }
 

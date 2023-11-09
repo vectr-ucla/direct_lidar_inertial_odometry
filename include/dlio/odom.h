@@ -332,6 +332,8 @@ private:
   double geo_abias_max_;
   double geo_gbias_max_;
 
+  //Misc
   bool publish_transforms;
+  bool stateHasBeenUpdated;
 
 };
