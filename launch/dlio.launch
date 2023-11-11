@@ -22,7 +22,7 @@
   <arg name="imu_topic" default="/os_cloud_node/imu"/>
 
   <!-- DLIO Odometry Node -->
-  <node ns="$(arg robot_namespace)" name="dlio_odom" pkg="direct_lidar_inertial_odometry" type="dlio_odom_node" output="screen" clear_params="true">
+  <node ns="$(arg robot_namespace)" name="dlio_odom_node" pkg="direct_lidar_inertial_odometry" type="dlio_odom_node" output="screen" clear_params="true">
 
     <!-- Load parameters -->
     <rosparam file="$(find direct_lidar_inertial_odometry)/cfg/dlio.yaml" command="load"/>

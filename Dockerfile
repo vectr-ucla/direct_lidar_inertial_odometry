@@ -35,6 +35,7 @@ RUN apt-get update && apt-get upgrade -y && \
     python3-catkin-tools \
     python3-osrf-pycommon \
     ros-noetic-pcl-ros \
+    libomp-dev \
     # EXAMPLE: \
     # build-essential \
     # libssl-dev \
