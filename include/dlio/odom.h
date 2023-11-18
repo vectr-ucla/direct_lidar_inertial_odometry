@@ -11,6 +11,8 @@
  ***********************************************************/
 
 #include "dlio/dlio.h"
+#include <tf2_ros/buffer.h>
+#include <tf2_ros/transform_listener.h>
 
 class dlio::OdomNode {
 
@@ -102,6 +104,10 @@ private:
   geometry_msgs::PoseStamped pose_ros;
   nav_msgs::Path path_ros;
   geometry_msgs::PoseArray kf_pose_ros;
+
+  // ROS Transform listener
+  tf2_ros::Buffer tf_buffer_;
+  tf2_ros::TransformListener tf_listener_;
 
   // Flags
   std::atomic<bool> dlio_initialized;

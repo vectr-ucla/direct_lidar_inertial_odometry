@@ -45,6 +45,8 @@ find_package(catkin REQUIRED COMPONENTS
   nav_msgs
   pcl_ros
   message_generation
+  tf2_ros
+  tf2
 )
 
 add_service_files(
@@ -67,6 +69,8 @@ catkin_package(
     sensor_msgs
     geometry_msgs
     pcl_ros
+    tf2_ros
+    tf2
   INCLUDE_DIRS
     include
   LIBRARIES

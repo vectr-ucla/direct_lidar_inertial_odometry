@@ -12,7 +12,7 @@
 
 #include "dlio/odom.h"
 
-dlio::OdomNode::OdomNode(ros::NodeHandle node_handle) : nh(node_handle) {
+dlio::OdomNode::OdomNode(ros::NodeHandle node_handle) : nh(node_handle), tf_listener_(tf_buffer_) {
 
   this->getParams();
 
@@ -175,6 +175,7 @@ void dlio::OdomNode::getParams() {
   ros::param::param<std::string>("~dlio/frames/lidar", this->lidar_frame, "lidar");
   ros::param::param<std::string>("~dlio/frames/imu", this->imu_frame, "imu");
 
+
   // Get Node NS and Remove Leading Character
   std::string ns = ros::this_node::getNamespace();
   ns.erase(0,1);
@@ -231,6 +232,9 @@ void dlio::OdomNode::getParams() {
     Eigen::Vector3f(baselink2imu_t[0], baselink2imu_t[1], baselink2imu_t[2]);
   this->extrinsics.baselink2imu.R =
     Eigen::Map<const Eigen::Matrix<float, -1, -1, Eigen::RowMajor>>(baselink2imu_R.data(), 3, 3);
+
+  std::cout << "t before: " << this->extrinsics.baselink2imu.t << std::endl;
+  std::cout << "R before: " << this->extrinsics.baselink2imu.R << std::endl;
 
   this->extrinsics.baselink2imu_T = Eigen::Matrix4f::Identity();
   this->extrinsics.baselink2imu_T.block(0, 3, 3, 1) = this->extrinsics.baselink2imu.t;
@@ -847,7 +851,51 @@ void dlio::OdomNode::callbackPointCloud(const sensor_msgs::PointCloud2ConstPtr& 
 
 void dlio::OdomNode::callbackImu(const sensor_msgs::Imu::ConstPtr& imu_raw) {
 
-  this->first_imu_received = true;
+
+  geometry_msgs::TransformStamped transform_stamped;
+  std::cout << "baselink_frame: " << this->baselink_frame << std::endl;
+  std::cout << "imu_frame: " << this->imu_frame << std::endl;
+  if (!this->first_imu_received) {
+    this->first_imu_received = true;
+    //listen for a ros transform between two frames
+    try {
+
+    transform_stamped = tf_buffer_.lookupTransform(this->baselink_frame, this->imu_frame, ros::Time::now());
+    Eigen::Matrix3f R;
+    //Get quaternion from transform
+    tf2::Quaternion q(transform_stamped.transform.rotation.x, 
+                      transform_stamped.transform.rotation.y, 
+                      transform_stamped.transform.rotation.z, 
+                      transform_stamped.transform.rotation.w); 
+    q.normalize();
+    
+    //Get rotation matrix from quaternion
+    R = Eigen::Quaternionf(q.w(), q.x(), q.y(), q.z()).toRotationMatrix();
+
+    std::cout << "R after: " << R << std::endl;
+
+    this->extrinsics.baselink2imu.R = R;
+
+    //Get translation from transform
+    this->extrinsics.baselink2imu.t = Eigen::Vector3f(transform_stamped.transform.translation.x,
+                                                      transform_stamped.transform.translation.y,
+                                                      transform_stamped.transform.translation.z);
+
+    std::cout << "t after: " << this->extrinsics.baselink2imu.t << std::endl;
+
+
+    this->extrinsics.baselink2imu_T.block(0, 3, 3, 1) = this->extrinsics.baselink2imu.t;
+    this->extrinsics.baselink2imu_T.block(0, 0, 3, 3) = this->extrinsics.baselink2imu.R;
+    }
+    catch (tf2::TransformException &ex) {
+      ROS_WARN("Exception %s",ex.what());
+      return;
+    }
+
+  }
+  else
+    return;
+      
 
   sensor_msgs::Imu::Ptr imu = this->transformImu( imu_raw );
   this->imu_stamp = imu->header.stamp;
