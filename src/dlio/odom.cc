@@ -318,7 +318,6 @@ void dlio::OdomNode::start() {
 }
 
 void dlio::OdomNode::publishPose(const ros::TimerEvent& e) {
-  std::cout << this->stateHasBeenUpdated << std::endl;
   if (!this->imu_calibrated || !this->dlio_initialized)
     return;
   // nav_msgs::Odometry
