@@ -20,8 +20,8 @@ def generate_launch_description():
 
     # Set default arguments
     rviz = LaunchConfiguration('rviz', default='false')
-    pointcloud_topic = LaunchConfiguration('pointcloud_topic', default='points')
-    imu_topic = LaunchConfiguration('imu_topic', default='imu')
+    pointcloud_topic = LaunchConfiguration('pointcloud_topic', default='points_raw')
+    imu_topic = LaunchConfiguration('imu_topic', default='imu_raw')
 
     # Define arguments
     declare_rviz_arg = DeclareLaunchArgument(
@@ -59,7 +59,7 @@ def generate_launch_description():
             ('kf_pose', 'dlio/odom_node/keyframes'),
             ('kf_cloud', 'dlio/odom_node/pointcloud/keyframe'),
             ('deskewed', 'dlio/odom_node/pointcloud/deskewed'),
-        ]
+        ],
     )
 
     # DLIO Mapping Node
@@ -70,7 +70,7 @@ def generate_launch_description():
         parameters=[dlio_yaml_path, dlio_params_yaml_path],
         remappings=[
             ('keyframes', 'dlio/odom_node/pointcloud/keyframe'),
-        ]
+        ],
     )
 
     # RViz node
