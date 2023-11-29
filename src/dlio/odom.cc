@@ -34,7 +34,7 @@ dlio::OdomNode::OdomNode() : Node("dlio_odom_node") {
   this->lidar_cb_group = this->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
   auto lidar_sub_opt = rclcpp::SubscriptionOptions();
   lidar_sub_opt.callback_group = this->lidar_cb_group;
-  this->lidar_sub = this->create_subscription<sensor_msgs::msg::PointCloud2>("pointcloud", rclcpp::SensorDataQoS(),
+  this->lidar_sub = this->create_subscription<sensor_msgs::msg::PointCloud2>("pointcloud", 1,
       std::bind(&dlio::OdomNode::callbackPointCloud, this, std::placeholders::_1), lidar_sub_opt);
 
   this->imu_cb_group = this->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
@@ -180,44 +180,44 @@ dlio::OdomNode::~OdomNode() {}
 void dlio::OdomNode::getParams() {
 
   // Version
-  dlio::declare_param(this, "~dlio/version", this->version_, "0.0.0");
+  dlio::declare_param(this, "version", this->version_, "0.0.0");
 
   // Frames
-  dlio::declare_param(this, "~dlio/frames/odom", this->odom_frame, "odom");
-  dlio::declare_param(this, "~dlio/frames/baselink", this->baselink_frame, "base_link");
-  dlio::declare_param(this, "~dlio/frames/lidar", this->lidar_frame, "lidar");
-  dlio::declare_param(this, "~dlio/frames/imu", this->imu_frame, "imu");
+  dlio::declare_param(this, "frames/odom", this->odom_frame, "odom");
+  dlio::declare_param(this, "frames/baselink", this->baselink_frame, "base_link");
+  dlio::declare_param(this, "frames/lidar", this->lidar_frame, "lidar");
+  dlio::declare_param(this, "frames/imu", this->imu_frame, "imu");
 
   // Deskew Flag
-  dlio::declare_param(this, "~dlio/pointcloud/deskew", this->deskew_, true);
+  dlio::declare_param(this, "pointcloud/deskew", this->deskew_, true);
 
   // Gravity
-  dlio::declare_param(this, "~dlio/odom/gravity", this->gravity_, 9.80665);
+  dlio::declare_param(this, "odom/gravity", this->gravity_, 9.80665);
 
   // Keyframe Threshold
-  dlio::declare_param(this, "~dlio/odom/keyframe/threshD", this->keyframe_thresh_dist_, 0.1);
-  dlio::declare_param(this, "~dlio/odom/keyframe/threshR", this->keyframe_thresh_rot_, 1.0);
+  dlio::declare_param(this, "odom/keyframe/threshD", this->keyframe_thresh_dist_, 0.1);
+  dlio::declare_param(this, "odom/keyframe/threshR", this->keyframe_thresh_rot_, 1.0);
 
   // Submap
-  dlio::declare_param(this, "~dlio/odom/submap/keyframe/knn", this->submap_knn_, 10);
-  dlio::declare_param(this, "~dlio/odom/submap/keyframe/kcv", this->submap_kcv_, 10);
-  dlio::declare_param(this, "~dlio/odom/submap/keyframe/kcc", this->submap_kcc_, 10);
+  dlio::declare_param(this, "odom/submap/keyframe/knn", this->submap_knn_, 10);
+  dlio::declare_param(this, "odom/submap/keyframe/kcv", this->submap_kcv_, 10);
+  dlio::declare_param(this, "odom/submap/keyframe/kcc", this->submap_kcc_, 10);
 
   // Dense map resolution
-  dlio::declare_param(this, "~dlio/map/dense/filtered", this->densemap_filtered_, true);
+  dlio::declare_param(this, "map/dense/filtered", this->densemap_filtered_, true);
 
   // Wait until movement to publish map
-  dlio::declare_param(this, "~dlio/map/waitUntilMove", this->wait_until_move_, false);
+  dlio::declare_param(this, "map/waitUntilMove", this->wait_until_move_, false);
 
   // Crop Box Filter
-  dlio::declare_param(this, "~dlio/odom/preprocessing/cropBoxFilter/size", this->crop_size_, 1.0);
+  dlio::declare_param(this, "odom/preprocessing/cropBoxFilter/size", this->crop_size_, 1.0);
 
   // Voxel Grid Filter
-  dlio::declare_param(this, "~dlio/pointcloud/voxelize", this->vf_use_, true);
-  dlio::declare_param(this, "~dlio/odom/preprocessing/voxelFilter/res", this->vf_res_, 0.05);
+  dlio::declare_param(this, "pointcloud/voxelize", this->vf_use_, true);
+  dlio::declare_param(this, "odom/preprocessing/voxelFilter/res", this->vf_res_, 0.05);
 
   // Adaptive Parameters
-  dlio::declare_param(this, "~dlio/adaptive", this->adaptive_params_, true);
+  dlio::declare_param(this, "adaptive", this->adaptive_params_, true);
 
   // Extrinsics
   std::vector<double> t_default{0., 0., 0.};
@@ -225,21 +225,20 @@ void dlio::OdomNode::getParams() {
 
   // center of gravity to imu
   std::vector<double> baselink2imu_t, baselink2imu_R;
-  dlio::declare_param(this, "~dlio/extrinsics/baselink2imu/t", baselink2imu_t, t_default);
-  dlio::declare_param(this, "~dlio/extrinsics/baselink2imu/R", baselink2imu_R, R_default);
+  dlio::declare_param(this, "extrinsics/baselink2imu/t", baselink2imu_t, t_default);
+  dlio::declare_param(this, "extrinsics/baselink2imu/R", baselink2imu_R, R_default);
   this->extrinsics.baselink2imu.t =
     Eigen::Vector3f(baselink2imu_t[0], baselink2imu_t[1], baselink2imu_t[2]);
   this->extrinsics.baselink2imu.R =
     Eigen::Map<const Eigen::Matrix<float, -1, -1, Eigen::RowMajor>>(std::vector<float>(baselink2imu_R.begin(), baselink2imu_R.end()).data(), 3, 3);
-
   this->extrinsics.baselink2imu_T = Eigen::Matrix4f::Identity();
   this->extrinsics.baselink2imu_T.block(0, 3, 3, 1) = this->extrinsics.baselink2imu.t;
   this->extrinsics.baselink2imu_T.block(0, 0, 3, 3) = this->extrinsics.baselink2imu.R;
 
   // center of gravity to lidar
   std::vector<double> baselink2lidar_t, baselink2lidar_R;
-  dlio::declare_param(this, "~dlio/extrinsics/baselink2lidar/t", baselink2lidar_t, t_default);
-  dlio::declare_param(this, "~dlio/extrinsics/baselink2lidar/R", baselink2lidar_R, R_default);
+  dlio::declare_param(this, "extrinsics/baselink2lidar/t", baselink2lidar_t, t_default);
+  dlio::declare_param(this, "extrinsics/baselink2lidar/R", baselink2lidar_R, R_default);
 
   this->extrinsics.baselink2lidar.t =
     Eigen::Vector3f(baselink2lidar_t[0], baselink2lidar_t[1], baselink2lidar_t[2]);
@@ -251,24 +250,24 @@ void dlio::OdomNode::getParams() {
   this->extrinsics.baselink2lidar_T.block(0, 0, 3, 3) = this->extrinsics.baselink2lidar.R;
 
   // IMU
-  dlio::declare_param(this, "~dlio/odom/imu/calibration/accel", this->calibrate_accel_, true);
-  dlio::declare_param(this, "~dlio/odom/imu/calibration/gyro", this->calibrate_gyro_, true);
-  dlio::declare_param(this, "~dlio/odom/imu/calibration/time", this->imu_calib_time_, 3.0);
-  dlio::declare_param(this, "~dlio/odom/imu/bufferSize", this->imu_buffer_size_, 2000);
+  dlio::declare_param(this, "odom/imu/calibration/accel", this->calibrate_accel_, true);
+  dlio::declare_param(this, "odom/imu/calibration/gyro", this->calibrate_gyro_, true);
+  dlio::declare_param(this, "odom/imu/calibration/time", this->imu_calib_time_, 3.0);
+  dlio::declare_param(this, "odom/imu/bufferSize", this->imu_buffer_size_, 2000);
 
   std::vector<double> accel_default{0., 0., 0.}; std::vector<double> prior_accel_bias;
   std::vector<double> gyro_default{0., 0., 0.}; std::vector<double> prior_gyro_bias;
 
-  dlio::declare_param(this, "~dlio/odom/imu/approximateGravity", this->gravity_align_, true);
-  dlio::declare_param(this, "~dlio/imu/calibration", this->imu_calibrate_, true);
-  dlio::declare_param(this, "~dlio/imu/intrinsics/accel/bias", prior_accel_bias, accel_default);
-  dlio::declare_param(this, "~dlio/imu/intrinsics/gyro/bias", prior_gyro_bias, gyro_default);
+  dlio::declare_param(this, "odom/imu/approximateGravity", this->gravity_align_, true);
+  dlio::declare_param(this, "imu/calibration", this->imu_calibrate_, true);
+  dlio::declare_param(this, "imu/intrinsics/accel/bias", prior_accel_bias, accel_default);
+  dlio::declare_param(this, "imu/intrinsics/gyro/bias", prior_gyro_bias, gyro_default);
 
   // scale-misalignment matrix
   std::vector<double> imu_sm_default{1., 0., 0., 0., 1., 0., 0., 0., 1.};
   std::vector<double> imu_sm;
 
-  dlio::declare_param(this, "~dlio/imu/intrinsics/accel/sm", imu_sm, imu_sm_default);
+  dlio::declare_param(this, "imu/intrinsics/accel/sm", imu_sm, imu_sm_default);
 
   if (!this->imu_calibrate_) {
     this->state.b.accel[0] = prior_accel_bias[0];
@@ -285,23 +284,23 @@ void dlio::OdomNode::getParams() {
   }
 
   // GICP
-  dlio::declare_param(this, "~dlio/odom/gicp/minNumPoints", this->gicp_min_num_points_, 100);
-  dlio::declare_param(this, "~dlio/odom/gicp/kCorrespondences", this->gicp_k_correspondences_, 20);
-  dlio::declare_param(this, "~dlio/odom/gicp/maxCorrespondenceDistance", this->gicp_max_corr_dist_,
+  dlio::declare_param(this, "odom/gicp/minNumPoints", this->gicp_min_num_points_, 100);
+  dlio::declare_param(this, "odom/gicp/kCorrespondences", this->gicp_k_correspondences_, 20);
+  dlio::declare_param(this, "odom/gicp/maxCorrespondenceDistance", this->gicp_max_corr_dist_,
       std::sqrt(std::numeric_limits<double>::max()));
-  dlio::declare_param(this, "~dlio/odom/gicp/maxIterations", this->gicp_max_iter_, 64);
-  dlio::declare_param(this, "~dlio/odom/gicp/transformationEpsilon", this->gicp_transformation_ep_, 0.0005);
-  dlio::declare_param(this, "~dlio/odom/gicp/rotationEpsilon", this->gicp_rotation_ep_, 0.0005);
-  dlio::declare_param(this, "~dlio/odom/gicp/initLambdaFactor", this->gicp_init_lambda_factor_, 1e-9);
+  dlio::declare_param(this, "odom/gicp/maxIterations", this->gicp_max_iter_, 64);
+  dlio::declare_param(this, "odom/gicp/transformationEpsilon", this->gicp_transformation_ep_, 0.0005);
+  dlio::declare_param(this, "odom/gicp/rotationEpsilon", this->gicp_rotation_ep_, 0.0005);
+  dlio::declare_param(this, "odom/gicp/initLambdaFactor", this->gicp_init_lambda_factor_, 1e-9);
 
   // Geometric Observer
-  dlio::declare_param(this, "~dlio/odom/geo/Kp", this->geo_Kp_, 1.0);
-  dlio::declare_param(this, "~dlio/odom/geo/Kv", this->geo_Kv_, 1.0);
-  dlio::declare_param(this, "~dlio/odom/geo/Kq", this->geo_Kq_, 1.0);
-  dlio::declare_param(this, "~dlio/odom/geo/Kab", this->geo_Kab_, 1.0);
-  dlio::declare_param(this, "~dlio/odom/geo/Kgb", this->geo_Kgb_, 1.0);
-  dlio::declare_param(this, "~dlio/odom/geo/abias_max", this->geo_abias_max_, 1.0);
-  dlio::declare_param(this, "~dlio/odom/geo/gbias_max", this->geo_gbias_max_, 1.0);
+  dlio::declare_param(this, "odom/geo/Kp", this->geo_Kp_, 1.0);
+  dlio::declare_param(this, "odom/geo/Kv", this->geo_Kv_, 1.0);
+  dlio::declare_param(this, "odom/geo/Kq", this->geo_Kq_, 1.0);
+  dlio::declare_param(this, "odom/geo/Kab", this->geo_Kab_, 1.0);
+  dlio::declare_param(this, "odom/geo/Kgb", this->geo_Kgb_, 1.0);
+  dlio::declare_param(this, "odom/geo/abias_max", this->geo_abias_max_, 1.0);
+  dlio::declare_param(this, "odom/geo/gbias_max", this->geo_gbias_max_, 1.0);
 }
 
 void dlio::OdomNode::start() {
@@ -588,9 +587,8 @@ void dlio::OdomNode::preprocessPoints() {
 
 void dlio::OdomNode::deskewPointcloud() {
 
-  pcl::PointCloud<PointType>::Ptr deskewed_scan_ = std::make_shared<pcl::PointCloud<PointType>>();
-  deskewed_scan_->points.resize(this->original_scan->points.size());
-
+  pcl::PointCloud<PointType>::Ptr deskewed_scan_ = std::make_shared<pcl::PointCloud<PointType>>(1, this->original_scan->points.size());
+  // deskewed_scan_->points.resize(this->original_scan->points.size());
   // individual point timestamps should be relative to this time
   double sweep_ref_time = rclcpp::Time(this->scan_header_stamp).seconds();
 
