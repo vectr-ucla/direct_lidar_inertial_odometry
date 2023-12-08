@@ -315,6 +315,7 @@ private:
   bool calibrate_gyro_;
   bool calibrate_accel_;
   bool gravity_align_;
+  bool imu_normalized_;
   double imu_calib_time_;
   int imu_buffer_size_;
   Eigen::Matrix3f imu_accel_sm_;
