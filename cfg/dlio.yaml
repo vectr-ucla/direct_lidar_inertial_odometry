@@ -22,6 +22,7 @@ dlio:
 
   imu:
     calibration: true
+    normalized: true
     intrinsics:
       accel:
         bias: [ 0.0, 0.0, 0.0 ]

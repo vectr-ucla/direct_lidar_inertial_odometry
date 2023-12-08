@@ -259,6 +259,7 @@ void dlio::OdomNode::getParams() {
 
   ros::param::param<bool>("~dlio/odom/imu/approximateGravity", this->gravity_align_, true);
   ros::param::param<bool>("~dlio/imu/calibration", this->imu_calibrate_, true);
+  ros::param::param<bool>("~dlio/imu/normalized", this->imu_normalized_, false);
   ros::param::param<std::vector<float>>("~dlio/imu/intrinsics/accel/bias", prior_accel_bias, accel_default);
   ros::param::param<std::vector<float>>("~dlio/imu/intrinsics/gyro/bias", prior_gyro_bias, gyro_default);
 
@@ -867,7 +868,7 @@ void dlio::OdomNode::callbackImu(const sensor_msgs::Imu::ConstPtr& imu_raw) {
   ang_vel[1] = imu->angular_velocity.y;
   ang_vel[2] = imu->angular_velocity.z;
 
-  if (this->sensor == dlio::SensorType::LIVOX) {
+  if (this->imu_normalized_) {
     lin_accel[0] = imu->linear_acceleration.x * this->gravity_;
     lin_accel[1] = imu->linear_acceleration.y * this->gravity_;
     lin_accel[2] = imu->linear_acceleration.z * this->gravity_;
