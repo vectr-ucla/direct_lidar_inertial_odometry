@@ -327,7 +327,7 @@ void dlio::OdomNode::start() {
 }
 
 void dlio::OdomNode::publishPose(const ros::TimerEvent& e) {
-  if (!this->imu_calibrated || !this->dlio_initialized ) // || !this->stateHasBeenUpdated
+  if (!this->imu_calibrated || !this->dlio_initialized || !this->stateHasBeenUpdated) // 
     return;
   // nav_msgs::Odometry
   this->odom_ros.header.stamp = this->imu_stamp;
