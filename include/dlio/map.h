@@ -28,8 +28,8 @@ private:
   void publishTimer(const ros::TimerEvent& e);
   void callbackKeyframe(const sensor_msgs::PointCloud2ConstPtr& keyframe);
 
-  bool savePcd(direct_lidar_inertial_odometry::save_pcd::Request& req,
-               direct_lidar_inertial_odometry::save_pcd::Response& res);
+  // bool savePcd(direct_lidar_inertial_odometry::save_pcd::Request& req,
+  //              direct_lidar_inertial_odometry::save_pcd::Response& res);
 
   ros::NodeHandle nh;
   ros::Timer publish_timer;

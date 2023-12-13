@@ -21,7 +21,7 @@ dlio::MapNode::MapNode(ros::NodeHandle node_handle) : nh(node_handle) {
   this->keyframe_sub = this->nh.subscribe("keyframes", 10,
       &dlio::MapNode::callbackKeyframe, this, ros::TransportHints().tcpNoDelay());
   this->map_pub = this->nh.advertise<sensor_msgs::PointCloud2>("map", 100);
-  this->save_pcd_srv = this->nh.advertiseService("save_pcd", &dlio::MapNode::savePcd, this);
+  // this->save_pcd_srv = this->nh.advertiseService("save_pcd", &dlio::MapNode::savePcd, this);
 
   this->dlio_map = pcl::PointCloud<PointType>::Ptr (boost::make_shared<pcl::PointCloud<PointType>>());
 
@@ -78,34 +78,35 @@ void dlio::MapNode::callbackKeyframe(const sensor_msgs::PointCloud2ConstPtr& key
 
 }
 
-bool dlio::MapNode::savePcd(direct_lidar_inertial_odometry::save_pcd::Request& req,
-                            direct_lidar_inertial_odometry::save_pcd::Response& res) {
+//REMOVED BECAUSE WE'RE NOT SAVING THE PCL MAP AND GIVES US COMPILATION ERRORS
+// bool dlio::MapNode::savePcd(direct_lidar_inertial_odometry::save_pcd::Request& req,
+//                             direct_lidar_inertial_odometry::save_pcd::Response& res) {
 
-  pcl::PointCloud<PointType>::Ptr m =
-    pcl::PointCloud<PointType>::Ptr (boost::make_shared<pcl::PointCloud<PointType>>(*this->dlio_map));
+//   pcl::PointCloud<PointType>::Ptr m =
+//     pcl::PointCloud<PointType>::Ptr (boost::make_shared<pcl::PointCloud<PointType>>(*this->dlio_map));
 
-  float leaf_size = req.leaf_size;
-  std::string p = req.save_path;
+//   float leaf_size = req.leaf_size;
+//   std::string p = req.save_path;
 
-  std::cout << std::setprecision(2) << "Saving map to " << p + "/dlio_map.pcd"
-    << " with leaf size " << to_string_with_precision(leaf_size, 2) << "... "; std::cout.flush();
+//   std::cout << std::setprecision(2) << "Saving map to " << p + "/dlio_map.pcd"
+//     << " with leaf size " << to_string_with_precision(leaf_size, 2) << "... "; std::cout.flush();
 
-  // voxelize map
-  pcl::VoxelGrid<PointType> vg;
-  vg.setLeafSize(leaf_size, leaf_size, leaf_size);
-  vg.setInputCloud(m);
-  vg.filter(*m);
+//   // voxelize map
+//   pcl::VoxelGrid<PointType> vg;
+//   vg.setLeafSize(leaf_size, leaf_size, leaf_size);
+//   vg.setInputCloud(m);
+//   vg.filter(*m);
 
-  // save map
-  int ret = pcl::io::savePCDFileBinary(p + "/dlio_map.pcd", *m);
-  res.success = ret == 0;
+//   // save map
+//   int ret = pcl::io::savePCDFileBinary(p + "/dlio_map.pcd", *m);
+//   res.success = ret == 0;
 
-  if (res.success) {
-    std::cout << "done" << std::endl;
-  } else {
-    std::cout << "failed" << std::endl;
-  }
+//   if (res.success) {
+//     std::cout << "done" << std::endl;
+//   } else {
+//     std::cout << "failed" << std::endl;
+//   }
 
-  return res.success;
+//   return res.success;
 
-}
+// }
