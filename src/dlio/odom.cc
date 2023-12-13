@@ -25,7 +25,6 @@ dlio::OdomNode::OdomNode(ros::NodeHandle node_handle) : nh(node_handle), tf_list
   else {this->imu_calibrated = true;}
   this->deskew_status = false;
   this->deskew_size = 0;
-
   this->stateHasBeenUpdated = false;
 
   this->lidar_sub = this->nh.subscribe("pointcloud", 1,
@@ -180,11 +179,20 @@ void dlio::OdomNode::getParams() {
   std::string ns = ros::this_node::getNamespace();
   ns.erase(0,1);
 
-  // Concatenate Frame Name Strings
-  this->odom_frame = ns + "/" + this->odom_frame;
-  this->baselink_frame = ns + "/" + this->baselink_frame;
-  this->lidar_frame = ns + "/" + this->lidar_frame;
-  this->imu_frame = ns + "/" + this->imu_frame;
+  // Concatenate Frame Name Strings (if there is one)
+  if (ns.compare("") != 0 && !ns.empty()) {
+    //Append to frames if we have namespace
+    this->odom_frame = ns + "/" + this->odom_frame;
+    this->baselink_frame = ns + "/" + this->baselink_frame;
+    this->lidar_frame = ns + "/" + this->lidar_frame;
+    this->imu_frame = ns + "/" + this->imu_frame;
+  }
+  std::cout << "odom_frame: " << this->odom_frame << std::endl;
+  std::cout << "baselink_frame: " << this->baselink_frame << std::endl;
+  std::cout << "lidar_frame: " << this->lidar_frame << std::endl;
+  std::cout << "imu_frame: " << this->imu_frame << std::endl;
+
+
 
   // Deskew FLag
   ros::param::param<bool>("~dlio/pointcloud/deskew", this->deskew_, true);
@@ -232,9 +240,6 @@ void dlio::OdomNode::getParams() {
     Eigen::Vector3f(baselink2imu_t[0], baselink2imu_t[1], baselink2imu_t[2]);
   this->extrinsics.baselink2imu.R =
     Eigen::Map<const Eigen::Matrix<float, -1, -1, Eigen::RowMajor>>(baselink2imu_R.data(), 3, 3);
-
-  std::cout << "t before: " << this->extrinsics.baselink2imu.t << std::endl;
-  std::cout << "R before: " << this->extrinsics.baselink2imu.R << std::endl;
 
   this->extrinsics.baselink2imu_T = Eigen::Matrix4f::Identity();
   this->extrinsics.baselink2imu_T.block(0, 3, 3, 1) = this->extrinsics.baselink2imu.t;
@@ -322,8 +327,7 @@ void dlio::OdomNode::start() {
 }
 
 void dlio::OdomNode::publishPose(const ros::TimerEvent& e) {
-  std::cout << this->stateHasBeenUpdated << std::endl;
-  if (!this->imu_calibrated || !this->dlio_initialized)
+  if (!this->imu_calibrated || !this->dlio_initialized ) // || !this->stateHasBeenUpdated
     return;
   // nav_msgs::Odometry
   this->odom_ros.header.stamp = this->imu_stamp;
@@ -406,39 +410,40 @@ void dlio::OdomNode::publishToROS(pcl::PointCloud<PointType>::ConstPtr published
 
     br.sendTransform(transformStamped);
 
-    // transform: baselink to imu
-    transformStamped.header.stamp = this->imu_stamp;
-    transformStamped.header.frame_id = this->baselink_frame;
-    transformStamped.child_frame_id = this->imu_frame;
+    //UNECESSARY SINCE WE ARE ALREADY PUBLISHING BASELINK TO OS_SENSOR
+    // // transform: baselink to imu
+    // transformStamped.header.stamp = this->imu_stamp;
+    // transformStamped.header.frame_id = this->baselink_frame;
+    // transformStamped.child_frame_id = this->imu_frame;
 
-    transformStamped.transform.translation.x = this->extrinsics.baselink2imu.t[0];
-    transformStamped.transform.translation.y = this->extrinsics.baselink2imu.t[1];
-    transformStamped.transform.translation.z = this->extrinsics.baselink2imu.t[2];
+    // transformStamped.transform.translation.x = this->extrinsics.baselink2imu.t[0];
+    // transformStamped.transform.translation.y = this->extrinsics.baselink2imu.t[1];
+    // transformStamped.transform.translation.z = this->extrinsics.baselink2imu.t[2];
 
-    Eigen::Quaternionf q(this->extrinsics.baselink2imu.R);
-    transformStamped.transform.rotation.w = q.w();
-    transformStamped.transform.rotation.x = q.x();
-    transformStamped.transform.rotation.y = q.y();
-    transformStamped.transform.rotation.z = q.z();
+    // Eigen::Quaternionf q(this->extrinsics.baselink2imu.R);
+    // transformStamped.transform.rotation.w = q.w();
+    // transformStamped.transform.rotation.x = q.x();
+    // transformStamped.transform.rotation.y = q.y();
+    // transformStamped.transform.rotation.z = q.z();
 
-    br.sendTransform(transformStamped);
+    // br.sendTransform(transformStamped);
 
-    // transform: baselink to lidar
-    transformStamped.header.stamp = this->imu_stamp;
-    transformStamped.header.frame_id = this->baselink_frame;
-    transformStamped.child_frame_id = this->lidar_frame;
+    // // transform: baselink to lidar
+    // transformStamped.header.stamp = this->imu_stamp;
+    // transformStamped.header.frame_id = this->baselink_frame;
+    // transformStamped.child_frame_id = this->lidar_frame;
 
-    transformStamped.transform.translation.x = this->extrinsics.baselink2lidar.t[0];
-    transformStamped.transform.translation.y = this->extrinsics.baselink2lidar.t[1];
-    transformStamped.transform.translation.z = this->extrinsics.baselink2lidar.t[2];
+    // transformStamped.transform.translation.x = this->extrinsics.baselink2lidar.t[0];
+    // transformStamped.transform.translation.y = this->extrinsics.baselink2lidar.t[1];
+    // transformStamped.transform.translation.z = this->extrinsics.baselink2lidar.t[2];
 
-    Eigen::Quaternionf qq(this->extrinsics.baselink2lidar.R);
-    transformStamped.transform.rotation.w = qq.w();
-    transformStamped.transform.rotation.x = qq.x();
-    transformStamped.transform.rotation.y = qq.y();
-    transformStamped.transform.rotation.z = qq.z();
+    // Eigen::Quaternionf qq(this->extrinsics.baselink2lidar.R);
+    // transformStamped.transform.rotation.w = qq.w();
+    // transformStamped.transform.rotation.x = qq.x();
+    // transformStamped.transform.rotation.y = qq.y();
+    // transformStamped.transform.rotation.z = qq.z();
 
-    br.sendTransform(transformStamped);
+    // br.sendTransform(transformStamped);
   }
 
 
@@ -700,7 +705,8 @@ void dlio::OdomNode::deskewPointcloud() {
   // update prior to be the estimated pose at the median time of the scan (corresponds to this->scan_stamp)
   this->T_prior = frames[median_pt_index];
 
-#pragma omp parallel for num_threads(this->num_threads_)
+
+  #pragma omp parallel for num_threads(this->num_threads_)
   for (int i = 0; i < timestamps.size(); i++) {
 
     Eigen::Matrix4f T = frames[i] * this->extrinsics.baselink2lidar_T;
@@ -727,7 +733,6 @@ void dlio::OdomNode::initializeInputTarget() {
   this->keyframe_timestamps.push_back(this->scan_header_stamp);
   this->keyframe_normals.push_back(this->gicp.getSourceCovariances());
   this->keyframe_transformations.push_back(this->T_corr);
-
 }
 
 void dlio::OdomNode::setInputSource() {
@@ -853,26 +858,23 @@ void dlio::OdomNode::callbackImu(const sensor_msgs::Imu::ConstPtr& imu_raw) {
 
 
   geometry_msgs::TransformStamped transform_stamped;
-  std::cout << "baselink_frame: " << this->baselink_frame << std::endl;
-  std::cout << "imu_frame: " << this->imu_frame << std::endl;
   if (!this->first_imu_received) {
-    this->first_imu_received = true;
     //listen for a ros transform between two frames
     try {
-
     transform_stamped = tf_buffer_.lookupTransform(this->baselink_frame, this->imu_frame, ros::Time::now());
     Eigen::Matrix3f R;
-    //Get quaternion from transform
+
+    // Get quaternion from transform
     tf2::Quaternion q(transform_stamped.transform.rotation.x, 
                       transform_stamped.transform.rotation.y, 
                       transform_stamped.transform.rotation.z, 
-                      transform_stamped.transform.rotation.w); 
-    q.normalize();
-    
-    //Get rotation matrix from quaternion
-    R = Eigen::Quaternionf(q.w(), q.x(), q.y(), q.z()).toRotationMatrix();
+                      transform_stamped.transform.rotation.w);
 
-    std::cout << "R after: " << R << std::endl;
+    // Convert tf2::Quaternion to Eigen::Quaternionf
+    Eigen::Quaternionf q_eigen(q.w(), q.x(), q.y(), q.z());
+    R = q_eigen.toRotationMatrix();
+
+    std::cout << "R between baselink and imu: " << std::endl << R << std::endl;
 
     this->extrinsics.baselink2imu.R = R;
 
@@ -881,20 +883,21 @@ void dlio::OdomNode::callbackImu(const sensor_msgs::Imu::ConstPtr& imu_raw) {
                                                       transform_stamped.transform.translation.y,
                                                       transform_stamped.transform.translation.z);
 
-    std::cout << "t after: " << this->extrinsics.baselink2imu.t << std::endl;
+    std::cout << "t between baselink and imu: " << std::endl << this->extrinsics.baselink2imu.t << std::endl;
 
 
     this->extrinsics.baselink2imu_T.block(0, 3, 3, 1) = this->extrinsics.baselink2imu.t;
     this->extrinsics.baselink2imu_T.block(0, 0, 3, 3) = this->extrinsics.baselink2imu.R;
+    this->first_imu_received = true;
     }
     catch (tf2::TransformException &ex) {
       ROS_WARN("Exception %s",ex.what());
+      std::cout << "ERROR: transform between " << this->baselink_frame << " and " << this->imu_frame << " not found!" << std::endl;
       return;
     }
 
   }
-  else
-    return;
+  
       
 
   sensor_msgs::Imu::Ptr imu = this->transformImu( imu_raw );

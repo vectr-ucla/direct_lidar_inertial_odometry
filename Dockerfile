@@ -36,6 +36,7 @@ RUN apt-get update && apt-get upgrade -y && \
     python3-osrf-pycommon \
     ros-noetic-pcl-ros \
     libomp-dev \
+    ros-noetic-tf2-eigen \
     # EXAMPLE: \
     # build-essential \
     # libssl-dev \

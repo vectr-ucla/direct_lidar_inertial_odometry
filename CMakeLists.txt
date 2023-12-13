@@ -47,6 +47,7 @@ find_package(catkin REQUIRED COMPONENTS
   message_generation
   tf2_ros
   tf2
+  tf2_eigen
 )
 
 add_service_files(
@@ -118,6 +119,6 @@ target_link_libraries(dlio_map_node ${catkin_LIBRARIES} ${PCL_LIBRARIES} ${OpenM
 
 # Binaries
 install( TARGETS dlio_odom_node dlio_map_node
-         DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION} )
+        DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION} )
 install( DIRECTORY cfg launch
          DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION} )
