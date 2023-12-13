@@ -63,6 +63,4 @@
 
   <!-- RViz -->
   <node pkg="rviz" type="rviz" name="dlio_rviz" args="-d $(find direct_lidar_inertial_odometry)/launch/dlio.rviz" if="$(arg rviz)"/>
-
-  <node pkg="rosbag" type="play" name="rosbag" args="$(find direct_lidar_inertial_odometry)/bags/trackdrive_wide.bag" if="$(arg rviz)"/>
 </launch>
