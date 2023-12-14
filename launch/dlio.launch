@@ -21,10 +21,6 @@
   <arg name="pointcloud_topic" default="/os_cloud_node/points"/>
   <arg name="imu_topic" default="/os_cloud_node/imu"/>
 
-  <node pkg="tf2_ros" type="static_transform_publisher" name="static_tf_base_link_to_os_sensor"
-    args="0.5 0 1   1 0 0 0 base_link  os_sensor " />
-
-
   <!-- DLIO Odometry Node -->
   <node name="dlio_odom_node" pkg="direct_lidar_inertial_odometry" type="dlio_odom_node" output="screen" clear_params="true">
 
