@@ -1,25 +1,68 @@
 version: '3.8'
 
+### -----------ROS MASTER----------------- ###
+# Do not edit! Works with melodic and noetic
 services:
-  direct_lidar_inertial_odometry:           # <-- YOUR TODO: change to name of your repository
-    # depends_on: 
-    #   - master          
-    #   - <package>          # <-- YOUR TODO: change dependencies to other packages
-    build:
-      context: .  
-      dockerfile: Dockerfile
-    image: direct_lidar_inertial_odometry:latest        # <-- YOUR TODO: change to name of your repository
-    restart: unless-stopped
+  master:
+    container_name: 
+      master-container
+    image: ros:noetic-ros-core-focal
     environment:
-      - PACKAGE_NAME=direct_lidar_inertial_odometry     # <-- YOUR TODO: change to name of your repository
-      # - ROS_MASTER_URI=http://master:11311 
+      - ROS_DISTRO=noetic
+    restart: unless-stopped
+    networks:
+      - ros_network
+    command: bash -c "source /opt/ros/noetic/setup.bash && roscore"
+
+### -----------PACKAGE----------------- ###
+  direct_lidar_inertial_odometry:
+    depends_on:
+      - master
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    #runtime: nvidia 
+    environment:
+      - PACKAGE_NAME=direct_lidar_inertial_odometry
+      - ROS_MASTER_URI=http://master:11311 
     volumes:
-      - ./:/ws/src/direct_lidar_inertial_odometry       # <-- YOUR TODO: change to name of your repository
-      # - ./fs_msgs:/ws/src/fs_msgs
-    # entrypoint: chmod +x /ws/src/fastslam2/docker-entrypoint.sh && /ws/src/fastslam2/docker-entrypoint.sh  # <-- YOUR TODO: change to name of your repository
-    entrypoint: /ws/src/direct_lidar_inertial_odometry/docker-entrypoint.sh # <-- YOUR TODO: change to name of your repository
-    command: sh -c "while true; do sleep 1; done"    
+      - ./:/ws/src/direct_lidar_inertial_odometry
+    networks:
+      - ros_network
+    entrypoint: /ws/src/direct_lidar_inertial_odometry/docker-entrypoint.sh 
+    command: bash -c "source devel/setup.bash && roslaunch --wait --log direct_lidar_inertial_odometry dlio.launch"
+
+networks:
+  ros_network:
+    driver: bridge
+
+
+
+# version: '3.8'
+
+# services:
+#   direct_lidar_inertial_odometry:           # <-- YOUR TODO: change to name of your repository
+#     # depends_on: 
+#     #   - master          
+#     #   - <package>          # <-- YOUR TODO: change dependencies to other packages
+#     build:
+#       context: .  
+#       dockerfile: Dockerfile
+#     image: direct_lidar_inertial_odometry:latest        # <-- YOUR TODO: change to name of your repository
+#     restart: unless-stopped
+#     environment:
+#       - PACKAGE_NAME=direct_lidar_inertial_odometry     # <-- YOUR TODO: change to name of your repository
+#       # - ROS_MASTER_URI=http://master:11311 
+#     volumes:
+#       - ./:/ws/src/direct_lidar_inertial_odometry       # <-- YOUR TODO: change to name of your repository
+#       # - ./fs_msgs:/ws/src/fs_msgs
+#     # entrypoint: chmod +x /ws/src/fastslam2/docker-entrypoint.sh && /ws/src/fastslam2/docker-entrypoint.sh  # <-- YOUR TODO: change to name of your repository
+#     entrypoint: /ws/src/direct_lidar_inertial_odometry/docker-entrypoint.sh # <-- YOUR TODO: change to name of your repository
+#     command: sh -c "while true; do sleep 1; done"    
 
 # networks:
 #   ros_network:
 #     driver: bridge
+
+
