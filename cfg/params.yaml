@@ -15,7 +15,7 @@ dlio:
   frames:
     odom: odom
     baselink: base_link
-    lidar: os_lidar
+    lidar: os_sensor
     imu: os_imu
 
   map:
