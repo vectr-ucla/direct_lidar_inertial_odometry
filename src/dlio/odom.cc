@@ -887,11 +887,45 @@ void dlio::OdomNode::callbackImu(const sensor_msgs::Imu::ConstPtr& imu_raw) {
 
     this->extrinsics.baselink2imu_T.block(0, 3, 3, 1) = this->extrinsics.baselink2imu.t;
     this->extrinsics.baselink2imu_T.block(0, 0, 3, 3) = this->extrinsics.baselink2imu.R;
+
+
+
+
+    transform_stamped = tf_buffer_.lookupTransform(this->baselink_frame, this->lidar_frame, ros::Time::now());
+    Eigen::Matrix3f R_lidar;
+
+    // Get quaternion from transform
+    tf2::Quaternion q_lidar(transform_stamped.transform.rotation.x, 
+                      transform_stamped.transform.rotation.y, 
+                      transform_stamped.transform.rotation.z, 
+                      transform_stamped.transform.rotation.w);
+
+    // Convert tf2::Quaternion to Eigen::Quaternionf
+    Eigen::Quaternionf q_eigen_lidar(q_lidar.w(), q_lidar.x(), q_lidar.y(), q_lidar.z());
+    R_lidar = q_eigen_lidar.toRotationMatrix();
+
+    std::cout << "R between baselink and lidar: " << std::endl << R_lidar << std::endl;
+
+    this->extrinsics.baselink2lidar.R = R_lidar;
+
+    //Get translation from transform
+    this->extrinsics.baselink2lidar.t = Eigen::Vector3f(transform_stamped.transform.translation.x,
+                                                      transform_stamped.transform.translation.y,
+                                                      transform_stamped.transform.translation.z);
+
+    std::cout << "t between baselink and lidar: " << std::endl << this->extrinsics.baselink2lidar.t << std::endl;
+
+
+    this->extrinsics.baselink2lidar_T.block(0, 3, 3, 1) = this->extrinsics.baselink2lidar.t;
+    this->extrinsics.baselink2lidar_T.block(0, 0, 3, 3) = this->extrinsics.baselink2lidar.R;
+
+
+
     this->first_imu_received = true;
     }
     catch (tf2::TransformException &ex) {
       ROS_WARN("Exception %s",ex.what());
-      std::cout << "ERROR: transform between " << this->baselink_frame << " and " << this->imu_frame << " not found!" << std::endl;
+      std::cout << "ERROR: transform between " << this->baselink_frame << " and " << this->imu_frame << " or " << this->lidar_frame << " not found!" << std::endl;
       return;
     }
 
