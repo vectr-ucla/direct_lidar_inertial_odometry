@@ -23,7 +23,6 @@ dlio:
     dense:
       filtered: false
     sparse:
-      frequency: 1.0
       leafSize: 0.25
 
   odom:

@@ -24,6 +24,7 @@
 #include <ios>
 #include <iostream>
 #include <mutex>
+#include <queue>
 #include <signal.h>
 #include <sstream>
 #include <stdio.h>
