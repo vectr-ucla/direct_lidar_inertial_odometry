@@ -28,6 +28,7 @@ dlio:
   odom:
 
     gravity: 9.80665
+    computeTimeOffset: true
 
     imu:
       approximateGravity: false

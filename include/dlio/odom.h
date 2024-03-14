@@ -286,6 +286,8 @@ private:
 
   double gravity_;
 
+  bool time_offset_;
+
   bool adaptive_params_;
 
   double obs_submap_thresh_;

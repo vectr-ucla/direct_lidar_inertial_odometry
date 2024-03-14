@@ -12,7 +12,9 @@ DLIO is a new lightweight LiDAR-inertial odometry algorithm with a novel coarse-
 ## Instructions
 
 ### Sensor Setup & Compatibility
-DLIO has been extensively tested using a variety of sensor configurations and currently supports Ouster, Velodyne, Hesai, and Livox LiDARs. The point cloud should be of input type `sensor_msgs::PointCloud2` and the 6-axis IMU input type of `sensor_msgs::Imu`. For Livox sensors specifically, please use the `feature/livox-support` branch and the latest [`livox_ros_driver2`](https://github.com/Livox-SDK/livox_ros_driver2) package with `xfer_format: 1` and point cloud of input type `livox_ros_driver2::CustomMsg` (see [here](https://github.com/vectr-ucla/direct_lidar_inertial_odometry/issues/5) for more information).
+DLIO has been extensively tested using a variety of sensor configurations and currently supports Ouster, Velodyne, Hesai, and Livox LiDARs. The point cloud should be of input type `sensor_msgs::PointCloud2` and the 6-axis IMU input type of `sensor_msgs::Imu`. 
+
+For Livox sensors specifically, you can use the `master` branch directly if it is of type `sensor_msgs::PointCloud2` (`xfer_format: 0`), or the `feature/livox-support` branch and the latest [`livox_ros_driver2`](https://github.com/Livox-SDK/livox_ros_driver2) package if it is of type `livox_ros_driver2::CustomMsg` (`xfer_format: 1`) (see [here](https://github.com/vectr-ucla/direct_lidar_inertial_odometry/issues/5) for more information).
 
 For best performance, extrinsic calibration between the LiDAR/IMU sensors and the robot's center-of-gravity should be inputted into `cfg/dlio.yaml`. If the exact values of these are unavailable, a rough LiDAR-to-IMU extrinsics can also be used (note however that performance will be degraded).
 
@@ -56,7 +58,7 @@ roslaunch direct_lidar_inertial_odometry dlio.launch \
   imu_topic:=/robot/imu
 ```
 
-for Ouster, Velodyne, or Hesai sensors, or 
+for Ouster, Velodyne, Hesai, or Livox (`xfer_format: 0`) sensors, or 
 
 ```sh
 roslaunch direct_lidar_inertial_odometry dlio.launch \
@@ -65,7 +67,7 @@ roslaunch direct_lidar_inertial_odometry dlio.launch \
   imu_topic:=/robot/imu
 ```
 
-for Livox sensors.
+for Livox sensors (`xfer_format: 1`).
 
 Be sure to change the topic names to your corresponding topics. Alternatively, edit the launch file directly if desired. If successful, you should see the following output in your terminal:
 <br>

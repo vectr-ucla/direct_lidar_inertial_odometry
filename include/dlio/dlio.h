@@ -78,7 +78,7 @@ std::string to_string_with_precision(const T a_value, const int n = 6)
 #include <direct_lidar_inertial_odometry/save_pcd.h>
 
 namespace dlio {
-  enum class SensorType { OUSTER, VELODYNE, HESAI, UNKNOWN };
+  enum class SensorType { OUSTER, VELODYNE, HESAI, LIVOX, UNKNOWN };
 
   class OdomNode;
   class MapNode;
@@ -89,9 +89,10 @@ namespace dlio {
     PCL_ADD_POINT4D;
     float intensity; // intensity
     union {
-      std::uint32_t t; // time since beginning of scan in nanoseconds
-      float time; // time since beginning of scan in seconds
-      double timestamp; // absolute timestamp in seconds
+    std::uint32_t t;   // (Ouster) time since beginning of scan in nanoseconds
+    float time;        // (Velodyne) time since beginning of scan in seconds
+    double timestamp;  // (Hesai) absolute timestamp in seconds
+                       // (Livox) absolute timestamp in (seconds * 10e9)
     };
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   } EIGEN_ALIGN16;
