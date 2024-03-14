@@ -31,7 +31,7 @@ dlio:
     computeTimeOffset: true
 
     imu:
-      approximateGravity: false
+      approximateGravity: true
       calibration:
         gyro: true
         accel: true
