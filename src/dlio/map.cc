@@ -12,13 +12,11 @@
 
 #include "dlio/map.h"
 #include <filesystem>
+#include "dlio/utils.h"
 
 dlio::MapNode::MapNode(): Node("dlio_map_node") {
 
   this->getParams();
-
-  this->publish_timer = this->create_wall_timer(std::chrono::duration<double>(this->publish_freq_), 
-      std::bind(&dlio::MapNode::publishTimer, this));
 
   this->keyframe_cb_group = this->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
   auto keyframe_sub_opt = rclcpp::SubscriptionOptions();
@@ -43,27 +41,13 @@ dlio::MapNode::~MapNode() {}
 void dlio::MapNode::getParams() {
 
   this->declare_parameter<std::string>("odom/odom_frame", "odom");
-  this->declare_parameter<double>("map/sparse/frequency", 1.0);
   this->declare_parameter<double>("map/sparse/leafSize", 0.5);
 
   this->get_parameter("odom/odom_frame", this->odom_frame);
-  this->get_parameter("map/sparse/frequency", this->publish_freq_);
   this->get_parameter("map/sparse/leafSize", this->leaf_size_);
 }
 
 void dlio::MapNode::start() {
-}
-
-void dlio::MapNode::publishTimer() {
-
-  if (this->dlio_map->points.size() == this->dlio_map->width * this->dlio_map->height) {
-    sensor_msgs::msg::PointCloud2 map_ros;
-    pcl::toROSMsg(*this->dlio_map, map_ros);
-    map_ros.header.stamp = this->now();
-    map_ros.header.frame_id = this->odom_frame;
-    this->map_pub->publish(map_ros);
-  }
-
 }
 
 void dlio::MapNode::callbackKeyframe(const sensor_msgs::msg::PointCloud2::ConstSharedPtr& keyframe) {
@@ -82,13 +66,12 @@ void dlio::MapNode::callbackKeyframe(const sensor_msgs::msg::PointCloud2::ConstS
 
   // publish full map
   if (this->dlio_map->points.size() == this->dlio_map->width * this->dlio_map->height) {
-    sensor_msgs::PointCloud2 map_ros;
+    sensor_msgs::msg::PointCloud2 map_ros;
     pcl::toROSMsg(*this->dlio_map, map_ros);
-    map_ros.header.stamp = ros::Time::now();
+    map_ros.header.stamp = this->now();
     map_ros.header.frame_id = this->odom_frame;
-    this->map_pub.publish(map_ros);
-  }
-
+    this->map_pub->publish(map_ros);
+  } 
 }
 
 void dlio::MapNode::savePCD(std::shared_ptr<direct_lidar_inertial_odometry::srv::SavePCD::Request> req,

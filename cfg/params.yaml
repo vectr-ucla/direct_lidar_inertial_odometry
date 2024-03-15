@@ -20,7 +20,6 @@
 
     map/waitUntilMove: true
     map/dense/filtered: false
-    map/sparse/frequency: 1.0
     map/sparse/leafSize: 0.25
 
     odom/gravity: 9.80665

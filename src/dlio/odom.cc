@@ -195,7 +195,7 @@ void dlio::OdomNode::getParams() {
   dlio::declare_param(this, "odom/gravity", this->gravity_, 9.80665);
 
   // Compute time offset between lidar and imu
-  ros::param::param<bool>("~dlio/odom/computeTimeOffset", this->time_offset_, false);
+  dlio::declare_param(this, "odom/computeTimeOffset", this->time_offset_, false);
 
   // Keyframe Threshold
   dlio::declare_param(this, "odom/keyframe/threshD", this->keyframe_thresh_dist_, 0.1);
@@ -637,7 +637,6 @@ void dlio::OdomNode::deskewPointcloud() {
       { return p1.value().timestamp != p2.value().timestamp; };
     extract_point_time = [&sweep_ref_time](boost::range::index_value<PointType&, long> pt)
       { return pt.value().timestamp; };
-
   } else if (this->sensor == dlio::SensorType::LIVOX) {
     point_time_cmp = [](const PointType& p1, const PointType& p2)
       { return p1.timestamp < p2.timestamp; };
@@ -1724,6 +1723,10 @@ void dlio::OdomNode::buildSubmap(State vehicle_state) {
   std::sort(this->submap_kf_idx_curr.begin(), this->submap_kf_idx_curr.end());
   std::sort(this->submap_kf_idx_prev.begin(), this->submap_kf_idx_prev.end());
   
+  // remove duplicate indices
+  auto last = std::unique(this->submap_kf_idx_curr.begin(), this->submap_kf_idx_curr.end());
+  this->submap_kf_idx_curr.erase(last, this->submap_kf_idx_curr.end());
+
   // remove duplicate indices
   auto last = std::unique(this->submap_kf_idx_curr.begin(), this->submap_kf_idx_curr.end());
   this->submap_kf_idx_curr.erase(last, this->submap_kf_idx_curr.end());
