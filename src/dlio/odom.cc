@@ -194,6 +194,9 @@ void dlio::OdomNode::getParams() {
   // Gravity
   dlio::declare_param(this, "odom/gravity", this->gravity_, 9.80665);
 
+  // Compute time offset between lidar and imu
+  dlio::declare_param(this, "odom/computeTimeOffset", this->time_offset_, false);
+
   // Keyframe Threshold
   dlio::declare_param(this, "odom/keyframe/threshD", this->keyframe_thresh_dist_, 0.1);
   dlio::declare_param(this, "odom/keyframe/threshR", this->keyframe_thresh_rot_, 1.0);
@@ -511,8 +514,11 @@ void dlio::OdomNode::getScanFromROS(const sensor_msgs::msg::PointCloud2::SharedP
     } else if (field.name == "time") {
       this->sensor = dlio::SensorType::VELODYNE;
       break;
-    } else if (field.name == "timestamp") {
+    } else if (field.name == "timestamp" && original_scan_->points[0].timestamp < 1e14) {
       this->sensor = dlio::SensorType::HESAI;
+      break;
+    } else if (field.name == "timestamp" && original_scan_->points[0].timestamp > 1e14) {
+      this->sensor = dlio::SensorType::LIVOX;
       break;
     }
   }
@@ -627,7 +633,14 @@ void dlio::OdomNode::deskewPointcloud() {
       { return p1.value().timestamp != p2.value().timestamp; };
     extract_point_time = [&sweep_ref_time](boost::range::index_value<PointType&, long> pt)
       { return pt.value().timestamp; };
-
+  } else if (this->sensor == dlio::SensorType::LIVOX) {
+    point_time_cmp = [](const PointType& p1, const PointType& p2)
+      { return p1.timestamp < p2.timestamp; };
+    point_time_neq = [](boost::range::index_value<PointType&, long> p1,
+                        boost::range::index_value<PointType&, long> p2)
+      { return p1.value().timestamp != p2.value().timestamp; };
+    extract_point_time = [&sweep_ref_time](boost::range::index_value<PointType&, long> pt)
+      { return pt.value().timestamp * 1e-9f; };
   }
 
   // copy points into deskewed_scan_ in order of timestamp
@@ -642,8 +655,16 @@ void dlio::OdomNode::deskewPointcloud() {
   // extract timestamps from points and put them in their own list
   std::vector<double> timestamps;
   std::vector<int> unique_time_indices;
+
+  // compute offset between sweep reference time and first point timestamp
+  double offset = 0.0;
+  if (this->time_offset_) {
+    offset = sweep_ref_time - extract_point_time(*points_unique_timestamps.begin());
+  }
+
+  // build list of unique timestamps and indices of first point with each timestamp
   for (auto it = points_unique_timestamps.begin(); it != points_unique_timestamps.end(); it++) {
-    timestamps.push_back(extract_point_time(*it));
+    timestamps.push_back(extract_point_time(*it) + offset);
     unique_time_indices.push_back(it->index());
   }
   unique_time_indices.push_back(deskewed_scan_->points.size());
@@ -1693,14 +1714,13 @@ void dlio::OdomNode::buildSubmap(State vehicle_state) {
   // get indices for top kNN for concave hull
   this->pushSubmapIndices(concave_ds, this->submap_kcc_, this->keyframe_concave);
 
-  // concatenate all submap clouds and normals
-  std::sort(this->submap_kf_idx_curr.begin(), this->submap_kf_idx_curr.end());
-  auto last = std::unique(this->submap_kf_idx_curr.begin(), this->submap_kf_idx_curr.end());
-  this->submap_kf_idx_curr.erase(last, this->submap_kf_idx_curr.end());
-
   // sort current and previous submap kf list of indices
   std::sort(this->submap_kf_idx_curr.begin(), this->submap_kf_idx_curr.end());
   std::sort(this->submap_kf_idx_prev.begin(), this->submap_kf_idx_prev.end());
+
+  // remove duplicate indices
+  auto last = std::unique(this->submap_kf_idx_curr.begin(), this->submap_kf_idx_curr.end());
+  this->submap_kf_idx_curr.erase(last, this->submap_kf_idx_curr.end());
 
   // check if submap has changed from previous iteration
   if (this->submap_kf_idx_curr != this->submap_kf_idx_prev){
@@ -1901,6 +1921,11 @@ void dlio::OdomNode::debug() {
   } else if (this->sensor == dlio::SensorType::HESAI) {
     std::cout << "| " << std::left << std::setfill(' ') << std::setw(66)
       << "Sensor Rates: Hesai @ " + to_string_with_precision(avg_lidar_rate, 2)
+                                  + " Hz, IMU @ " + to_string_with_precision(avg_imu_rate, 2) + " Hz"
+      << "|" << std::endl;
+  } else if (this->sensor == dlio::SensorType::LIVOX) {
+    std::cout << "| " << std::left << std::setfill(' ') << std::setw(66)
+      << "Sensor Rates: Livox @ " + to_string_with_precision(avg_lidar_rate, 2)
                                   + " Hz, IMU @ " + to_string_with_precision(avg_imu_rate, 2) + " Hz"
       << "|" << std::endl;
   } else {
