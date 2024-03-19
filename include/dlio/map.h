@@ -35,13 +35,11 @@ private:
 
   void getParams();
 
-  void publishTimer();
   void callbackKeyframe(const sensor_msgs::msg::PointCloud2::ConstSharedPtr& keyframe);
 
   void savePCD(std::shared_ptr<direct_lidar_inertial_odometry::srv::SavePCD::Request> req,
                std::shared_ptr<direct_lidar_inertial_odometry::srv::SavePCD::Response> res);
 
-  rclcpp::TimerBase::SharedPtr publish_timer;
 
   rclcpp::Subscription<sensor_msgs::msg::PointCloud2>::SharedPtr keyframe_sub;
   rclcpp::CallbackGroup::SharedPtr keyframe_cb_group, save_pcd_cb_group;
@@ -54,7 +52,6 @@ private:
 
   std::string odom_frame;
 
-  double publish_freq_;
   double leaf_size_;
 
 };
