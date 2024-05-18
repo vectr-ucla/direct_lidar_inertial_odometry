@@ -21,7 +21,7 @@ dlio::MapNode::MapNode(ros::NodeHandle node_handle) : nh(node_handle) {
   this->map_pub = this->nh.advertise<sensor_msgs::PointCloud2>("map", 100);
   this->save_pcd_srv = this->nh.advertiseService("save_pcd", &dlio::MapNode::savePcd, this);
 
-  this->dlio_map = pcl::PointCloud<PointType>::Ptr (boost::make_shared<pcl::PointCloud<PointType>>());
+  this->dlio_map = pcl::PointCloud<PointType>::Ptr (std::make_shared<pcl::PointCloud<PointType>>());
 
   pcl::console::setVerbosityLevel(pcl::console::L_ERROR);
 
@@ -50,7 +50,7 @@ void dlio::MapNode::callbackKeyframe(const sensor_msgs::PointCloud2ConstPtr& key
 
   // convert scan to pcl format
   pcl::PointCloud<PointType>::Ptr keyframe_pcl =
-    pcl::PointCloud<PointType>::Ptr (boost::make_shared<pcl::PointCloud<PointType>>());
+    pcl::PointCloud<PointType>::Ptr (std::make_shared<pcl::PointCloud<PointType>>());
   pcl::fromROSMsg(*keyframe, *keyframe_pcl);
 
   // voxel filter
@@ -76,7 +76,7 @@ bool dlio::MapNode::savePcd(direct_lidar_inertial_odometry::save_pcd::Request& r
                             direct_lidar_inertial_odometry::save_pcd::Response& res) {
 
   pcl::PointCloud<PointType>::Ptr m =
-    pcl::PointCloud<PointType>::Ptr (boost::make_shared<pcl::PointCloud<PointType>>(*this->dlio_map));
+    pcl::PointCloud<PointType>::Ptr (std::make_shared<pcl::PointCloud<PointType>>(*this->dlio_map));
 
   float leaf_size = req.leaf_size;
   std::string p = req.save_path;

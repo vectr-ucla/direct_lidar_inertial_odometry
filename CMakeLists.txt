@@ -13,7 +13,7 @@
 cmake_minimum_required(VERSION 3.12.4)
 project(direct_lidar_inertial_odometry)
 
-add_compile_options(-std=c++14)
+# add_compile_options(-std=c++14)
 set(CMAKE_BUILD_TYPE "Release")
 
 find_package( PCL REQUIRED )
