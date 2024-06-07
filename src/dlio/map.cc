@@ -85,8 +85,8 @@ bool dlio::MapNode::savePcd(direct_lidar_inertial_odometry::save_pcd::Request& r
 
   if (!std::filesystem::is_directory(p)) {
     std::cout << "Could not find directory " << p << std::endl;
-    res->success = false;
-    return;
+    res.success = false;
+    return false;
   }
   
   std::cout << std::setprecision(2) << "Saving map to " << p + "/dlio_map.pcd"
