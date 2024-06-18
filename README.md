@@ -44,7 +44,7 @@ Compile using the [`catkin_tools`](https://catkin-tools.readthedocs.io/en/latest
 mkdir ~/ros2_ws && cd ~/ros2_ws && mkdir src && cd src
 ```
 ```sh
-git clone https://github.com/vectr-ucla/direct_lidar_inertial_odometry
+git clone https://github.com/vectr-ucla/direct_lidar_inertial_odometry -b feature/ros2
 ```
 ```sh
 cd ~/ros2_ws
