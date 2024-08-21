@@ -301,7 +301,7 @@ void dlio::OdomNode::getParams() {
   ros::param::param<double>("~dlio/odom/geo/abias_max", this->geo_abias_max_, 1.0);
   ros::param::param<double>("~dlio/odom/geo/gbias_max", this->geo_gbias_max_, 1.0);
 
-  ros::param::param::<bool>("~dlio/verbose", this->verbose, true);
+  ros::param::param<bool>("~dlio/verbose", this->verbose, true);
 }
 
 void dlio::OdomNode::start() {
