@@ -90,7 +90,7 @@ Be sure to change the topic names to your corresponding topics. Alternatively, e
 To save DLIO's generated map into `.pcd` format, call the following service:
 
 ```sh
-rosservice call /robot/dlio_map/save_pcd LEAF_SIZE SAVE_PATH
+ros2 service call /save_pcd direct_lidar_inertial_odometry/srv/SavePCD "{'leaf_size': 0.2, 'save_path': '~/map'}"
 ```
 
 ### Test Data
