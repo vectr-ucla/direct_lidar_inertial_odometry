@@ -12,13 +12,13 @@ DLIO is a new lightweight LiDAR-inertial odometry algorithm with a novel coarse-
 ## Instructions
 
 ### Sensor Setup
-DLIO has been extensively tested using a variety of sensor configurations and currently supports Ouster, Velodyne, and Hesai LiDARs. The point cloud should be of input type `sensor_msgs::PointCloud2` and the 6-axis IMU input type of `sensor_msgs::Imu`.
+DLIO has been extensively tested using a variety of sensor configurations and currently supports Ouster, Velodyne, and Hesai LiDARs. The point cloud should have an input type of `sensor_msgs::PointCloud2` and a 6-axis IMU input type of `sensor_msgs::Imu`.
 
-For best performance, extrinsic calibration between the LiDAR/IMU sensors and the robot's center-of-gravity should be inputted into `cfg/dlio.yaml`. If the exact values of these are unavailable, a rough LiDAR-to-IMU extrinsics can also be used (note however that performance will be degraded).
+For best performance, extrinsic calibration between the LiDAR/IMU sensors and the robot's center-of-gravity should be inputted into `cfg/dlio.yaml`. If the exact values of these are unavailable, a rough LiDAR-to-IMU extrinsic can also be used (note, however, that performance will be degraded).
 
-IMU intrinsics are also necessary for best performance, and there are several open-source calibration tools to get these values. These values should also go into `cfg/dlio.yaml`. In practice however, if you are just testing this work, using the default ideal values and performing the initial calibration procedure should be fine.
+IMU intrinsics are also necessary for best performance, and there are several open-source calibration tools to get these values. These values should also go into `cfg/dlio.yaml`. In practice, however, if you are testing this work, using the default ideal values and performing the initial calibration procedure should be fine.
 
-Also note that the LiDAR and IMU sensors _need_ to be properly time-synchronized, otherwise DLIO will not work. We recommend using a LiDAR with an integrated IMU (such as an Ouster) for simplicity of extrinsics and synchronization.
+Also, it is worth to point out that the LiDAR and IMU sensors _need_ to be properly time-synchronized. Otherwise, DLIO will not work. We recommend using a LiDAR with an integrated IMU (such as an Ouster) for simplicity of extrinsic parameters and synchronization.
 
 ### Dependencies
 The following has been verified to be compatible, although other configurations may work too:
@@ -32,7 +32,7 @@ The following has been verified to be compatible, although other configurations 
 - Eigen >= `3.3.7`
 
 ```sh
-sudo apt install libomp-dev libpcl-dev libeigen3-dev
+sudo apt install libomp-dev libpcl-dev libeigen3-dev ros-humble-pcl-ros
 ```
 
 DLIO currently supports `ROS 1` and `ROS 2`!
