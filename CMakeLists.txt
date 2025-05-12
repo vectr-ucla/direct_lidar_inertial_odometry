@@ -74,7 +74,6 @@ target_link_libraries(dlio_map_node ${PCL_LIBRARIES}  ${cpp_typesupport_target})
 ament_target_dependencies(dlio_map_node "tf2_ros" "pcl_ros" "pcl_conversions" "rclcpp")
 
 ament_export_include_directories(include)
-ament_export_libraries(nano_gicp nanoflann)
 ament_export_dependencies(rclcpp std_msgs sensor_msgs geometry_msgs pcl_ros)
 ament_package()
 
