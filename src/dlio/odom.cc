@@ -970,7 +970,7 @@ void dlio::OdomNode::callbackImu(const sensor_msgs::Imu::ConstPtr& imu_raw) {
       }
 
       this->imu_calibrated = true;
-
+      this->prev_imu_stamp = imu->header.stamp.toSec();
     }
 
   } else {
