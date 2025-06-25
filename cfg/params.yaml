@@ -18,9 +18,9 @@
     frames/lidar: lidar
     frames/imu: imu
 
-    map/waitUntilMove: true
+    map/waitUntilMove: false
     map/dense/filtered: false
-    map/sparse/leafSize: 0.1
+    map/sparse/leafSize: 0.2
 
     odom/gravity: 9.80665
     odom/computeTimeOffset: true
@@ -32,7 +32,7 @@
     odom/imu/bufferSize: 5000
 
     odom/preprocessing/cropBoxFilter/size: 0.5
-    odom/preprocessing/voxelFilter/res: 0.05
+    odom/preprocessing/voxelFilter/res: 0.2
 
     odom/keyframe/threshD: 1.0
     odom/keyframe/threshR: 45.0
@@ -42,11 +42,11 @@
     odom/submap/keyframe/kcc: 10
     odom/gicp/minNumPoints: 64
     odom/gicp/kCorrespondences: 16
-    odom/gicp/maxCorrespondenceDistance: 0.5
-    odom/gicp/maxIterations: 32
-    odom/gicp/transformationEpsilon: 0.01
-    odom/gicp/rotationEpsilon: 0.01
-    odom/gicp/initLambdaFactor: 1e-9
+    odom/gicp/maxCorrespondenceDistance: 1.0
+    odom/gicp/maxIterations: 128
+    odom/gicp/transformationEpsilon: 0.005
+    odom/gicp/rotationEpsilon: 0.001
+    odom/gicp/initLambdaFactor: 1e-7
 
     odom/geo/Kp: 4.5
     odom/geo/Kv: 11.25
