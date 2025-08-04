@@ -176,12 +176,14 @@ void dlio::OdomNode::getParams() {
   // Get Node NS and Remove Leading Character
   std::string ns = ros::this_node::getNamespace();
   ns.erase(0,1);
-
-  // Concatenate Frame Name Strings
-  this->odom_frame = ns + "/" + this->odom_frame;
-  this->baselink_frame = ns + "/" + this->baselink_frame;
-  this->lidar_frame = ns + "/" + this->lidar_frame;
-  this->imu_frame = ns + "/" + this->imu_frame;
+  
+  if(!ns.empty()){
+    // Concatenate Frame Name Strings
+    this->odom_frame = ns + "/" + this->odom_frame;
+    this->baselink_frame = ns + "/" + this->baselink_frame;
+    this->lidar_frame = ns + "/" + this->lidar_frame;
+    this->imu_frame = ns + "/" + this->imu_frame;
+  }
 
   // Deskew FLag
   ros::param::param<bool>("~dlio/pointcloud/deskew", this->deskew_, true);
