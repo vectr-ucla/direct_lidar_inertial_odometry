@@ -1727,10 +1727,6 @@ void dlio::OdomNode::buildSubmap(State vehicle_state) {
   auto last = std::unique(this->submap_kf_idx_curr.begin(), this->submap_kf_idx_curr.end());
   this->submap_kf_idx_curr.erase(last, this->submap_kf_idx_curr.end());
 
-  // remove duplicate indices
-  auto last = std::unique(this->submap_kf_idx_curr.begin(), this->submap_kf_idx_curr.end());
-  this->submap_kf_idx_curr.erase(last, this->submap_kf_idx_curr.end());
-
   // check if submap has changed from previous iteration
   if (this->submap_kf_idx_curr != this->submap_kf_idx_prev){
 
