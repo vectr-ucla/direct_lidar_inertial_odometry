@@ -25,8 +25,8 @@ Also note that the LiDAR and IMU sensors _need_ to be properly time-synchronized
 ### Dependencies
 The following has been verified to be compatible, although other configurations may work too:
 
-- Ubuntu 20.04
-- ROS Noetic (`roscpp`, `std_msgs`, `sensor_msgs`, `geometry_msgs`, `nav_msgs`, `pcl_ros`)
+- Ubuntu 22.04
+- ROS Humble (`rclcpp`, `std_msgs`, `sensor_msgs`, `geometry_msgs`, `nav_msgs`, `pcl_ros`)
 - C++ 14
 - CMake >= `3.12.4`
 - OpenMP >= `4.5`
@@ -37,19 +37,35 @@ The following has been verified to be compatible, although other configurations 
 sudo apt install libomp-dev libpcl-dev libeigen3-dev
 ```
 
-DLIO supports ROS1 by default, and ROS2 using the `feature/ros2` branch.
+DLIO currently supports `ROS 1` and `ROS 2`!
 
 ### Compiling
 Compile using the [`catkin_tools`](https://catkin-tools.readthedocs.io/en/latest/) package via:
 
 ```sh
-mkdir ws && cd ws && mkdir src && catkin init && cd src
-git clone https://github.com/vectr-ucla/direct_lidar_inertial_odometry.git
-catkin build
+mkdir ~/ros2_ws && cd ~/ros2_ws && mkdir src && cd src
+```
+```sh
+git clone https://github.com/vectr-ucla/direct_lidar_inertial_odometry -b feature/ros2
+```
+```sh
+cd ~/ros2_ws
+```
+```sh
+colcon build --symlink-install --packages-select direct_lidar_inertial_odometry
 ```
 
 ### Execution
-After compiling, source the workspace and execute via:
+
+<details>
+<summary> After compiling, don't forget to source before ROS commands.</summary>
+
+``` bash
+source ~/ros2_ws/install/setup.bash
+```
+</details>
+
+Execute via:
 
 ```sh
 roslaunch direct_lidar_inertial_odometry dlio.launch \
@@ -58,16 +74,13 @@ roslaunch direct_lidar_inertial_odometry dlio.launch \
   imu_topic:=/robot/imu
 ```
 
-for Ouster, Velodyne, Hesai, or Livox (`xfer_format: 0`) sensors, or 
+<details>
+<summary> Example command: </summary>
 
-```sh
-roslaunch direct_lidar_inertial_odometry dlio.launch \
-  rviz:={true, false} \
-  livox_topic:=/livox/lidar \
-  imu_topic:=/robot/imu
+``` bash
+ros2 launch direct_lidar_inertial_odometry dlio.launch.py rviz:=true pointcloud_topic:=/lexus3/os_center/points imu_topic:=/lexus3/os_center/imu
 ```
-
-for Livox sensors (`xfer_format: 1`).
+</details>
 
 Be sure to change the topic names to your corresponding topics. Alternatively, edit the launch file directly if desired. If successful, you should see the following output in your terminal:
 <br>
@@ -79,7 +92,7 @@ Be sure to change the topic names to your corresponding topics. Alternatively, e
 To save DLIO's generated map into `.pcd` format, call the following service:
 
 ```sh
-rosservice call /robot/dlio_map/save_pcd LEAF_SIZE SAVE_PATH
+ros2 service call /save_pcd direct_lidar_inertial_odometry/srv/SavePCD "{'leaf_size': 0.2, 'save_path': '~/map'}"
 ```
 
 ### Test Data

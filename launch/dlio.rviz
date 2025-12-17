@@ -1,5 +1,5 @@
 Panels:
-  - Class: rviz/Displays
+  - Class: rviz_common/Displays
     Help Height: 0
     Name: Displays
     Property Tree Widget:
@@ -8,23 +8,23 @@ Panels:
         - /Point Clouds1
         - /Odometry1
       Splitter Ratio: 0.6470588445663452
-    Tree Height: 985
-  - Class: rviz/Selection
+    Tree Height: 441
+  - Class: rviz_common/Selection
     Name: Selection
-  - Class: rviz/Tool Properties
+  - Class: rviz_common/Tool Properties
     Expanded:
       - /2D Pose Estimate1
       - /2D Nav Goal1
       - /Publish Point1
     Name: Tool Properties
     Splitter Ratio: 0.5886790156364441
-  - Class: rviz/Views
+  - Class: rviz_common/Views
     Expanded:
       - /Current View1
       - /Current View1/Focal Point1
     Name: Views
     Splitter Ratio: 0.5157480239868164
-  - Class: rviz/Time
+  - Class: rviz_common/Time
     Name: Time
     SyncMode: 0
     SyncSource: Dense Map
@@ -35,9 +35,9 @@ Toolbars:
 Visualization Manager:
   Class: ""
   Displays:
-    - Class: rviz/Group
+    - Class: rviz_common/Group
       Displays:
-        - Class: rviz/TF
+        - Class: rviz_default_plugins/TF
           Enabled: false
           Filter (blacklist): ""
           Filter (whitelist): ""
@@ -55,26 +55,26 @@ Visualization Manager:
           Update Interval: 0
           Value: false
         - Alpha: 1
-          Class: rviz/Axes
+          Class: rviz_default_plugins/Axes
           Enabled: true
           Length: 1
           Name: odom
           Radius: 0.25
-          Reference Frame: robot/odom
+          Reference Frame: odom
           Show Trail: false
           Value: true
         - Alpha: 1
-          Class: rviz/Axes
+          Class: rviz_default_plugins/Axes
           Enabled: true
           Length: 1
           Name: base_link
           Radius: 0.25
-          Reference Frame: robot/base_link
+          Reference Frame: base_link
           Show Trail: false
           Value: true
       Enabled: true
       Name: Frames
-    - Class: rviz/Group
+    - Class: rviz_common/Group
       Displays:
         - Alpha: 1
           Autocompute Intensity Bounds: false
@@ -84,7 +84,7 @@ Visualization Manager:
             Value: true
           Axis: Z
           Channel Name: intensity
-          Class: rviz/PointCloud2
+          Class: rviz_default_plugins/PointCloud2
           Color: 0; 255; 0
           Color Transformer: Intensity
           Decay Time: 0
@@ -101,7 +101,7 @@ Visualization Manager:
           Size (Pixels): 2
           Size (m): 0.009999999776482582
           Style: Points
-          Topic: /robot/dlio/odom_node/pointcloud/deskewed
+          Topic: /dlio/odom_node/pointcloud/deskewed
           Unreliable: false
           Use Fixed Frame: true
           Use rainbow: true
@@ -114,7 +114,7 @@ Visualization Manager:
             Value: true
           Axis: Z
           Channel Name: intensity
-          Class: rviz/PointCloud2
+          Class: rviz_default_plugins/PointCloud2
           Color: 0; 255; 0
           Color Transformer: Intensity
           Decay Time: 9999
@@ -131,7 +131,7 @@ Visualization Manager:
           Size (Pixels): 1
           Size (m): 0.009999999776482582
           Style: Points
-          Topic: /robot/dlio/odom_node/pointcloud/deskewed
+          Topic: /dlio/odom_node/pointcloud/deskewed
           Unreliable: false
           Use Fixed Frame: true
           Use rainbow: true
@@ -144,7 +144,7 @@ Visualization Manager:
             Value: false
           Axis: Z
           Channel Name: intensity
-          Class: rviz/PointCloud2
+          Class: rviz_default_plugins/PointCloud2
           Color: 255; 255; 255
           Color Transformer: Intensity
           Decay Time: 0
@@ -161,17 +161,17 @@ Visualization Manager:
           Size (Pixels): 1
           Size (m): 0.05000000074505806
           Style: Points
-          Topic: /robot/dlio/map_node/map
+          Topic: /dlio/map_node/map
           Unreliable: false
           Use Fixed Frame: true
           Use rainbow: true
           Value: true
       Enabled: true
       Name: Point Clouds
-    - Class: rviz/Group
+    - Class: rviz_common/Group
       Displays:
         - Angle Tolerance: 0.009999999776482582
-          Class: rviz/Odometry
+          Class: rviz_default_plugins/Odometry
           Covariance:
             Orientation:
               Alpha: 0.5
@@ -202,14 +202,14 @@ Visualization Manager:
             Shaft Length: 1
             Shaft Radius: 0.05000000074505806
             Value: Axes
-          Topic: /robot/dlio/odom_node/odom
+          Topic: /dlio/odom_node/odom
           Unreliable: false
           Value: false
         - Alpha: 1
           Arrow Length: 0.30000001192092896
           Axes Length: 0.5
           Axes Radius: 0.10000000149011612
-          Class: rviz/PoseArray
+          Class: rviz_default_plugins/PoseArray
           Color: 255; 25; 0
           Enabled: false
           Head Length: 0.07000000029802322
@@ -219,12 +219,12 @@ Visualization Manager:
           Shaft Length: 0.23000000417232513
           Shaft Radius: 0.009999999776482582
           Shape: Axes
-          Topic: /robot/dlio/odom_node/keyframes
+          Topic: /dlio/odom_node/keyframes
           Unreliable: false
           Value: false
         - Alpha: 1
           Buffer Length: 1
-          Class: rviz/Path
+          Class: rviz_default_plugins/Path
           Color: 255; 209; 0
           Enabled: true
           Head Diameter: 0.30000001192092896
@@ -243,7 +243,7 @@ Visualization Manager:
           Radius: 0.029999999329447746
           Shaft Diameter: 0.10000000149011612
           Shaft Length: 0.10000000149011612
-          Topic: /robot/dlio/odom_node/path
+          Topic: /dlio/odom_node/path
           Unreliable: false
           Value: true
       Enabled: true
@@ -252,30 +252,30 @@ Visualization Manager:
   Global Options:
     Background Color: 0; 0; 0
     Default Light: true
-    Fixed Frame: robot/odom
+    Fixed Frame: odom
     Frame Rate: 30
   Name: root
   Tools:
-    - Class: rviz/Interact
+    - Class: rviz_default_plugins/Interact
       Hide Inactive Objects: true
-    - Class: rviz/MoveCamera
-    - Class: rviz/Select
-    - Class: rviz/FocusCamera
-    - Class: rviz/Measure
-    - Class: rviz/SetInitialPose
+    - Class: rviz_default_plugins/MoveCamera
+    - Class: rviz_default_plugins/Select
+    - Class: rviz_default_plugins/FocusCamera
+    - Class: rviz_default_plugins/Measure
+    - Class: rviz_default_plugins/SetInitialPose
       Theta std deviation: 0.2617993950843811
       Topic: /initialpose
       X std deviation: 0.5
       Y std deviation: 0.5
-    - Class: rviz/SetGoal
+    - Class: rviz_default_plugins/SetGoal
       Topic: /move_base_simple/goal
-    - Class: rviz/PublishPoint
+    - Class: rviz_default_plugins/PublishPoint
       Single click: true
       Topic: /clicked_point
   Value: true
   Views:
     Current:
-      Class: rviz/Orbit
+      Class: rviz_default_plugins/Orbit
       Distance: 20
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
@@ -293,7 +293,7 @@ Visualization Manager:
       Name: Current View
       Near Clip Distance: 0.009999999776482582
       Pitch: 1
-      Target Frame: robot/base_link
+      Target Frame: base_link
       Yaw: 3.140000104904175
     Saved: ~
 Window Geometry:
