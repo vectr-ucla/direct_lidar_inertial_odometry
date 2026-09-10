@@ -50,6 +50,8 @@ private:
   bool imuMeasFromTimeRange(double start_time, double end_time,
                             boost::circular_buffer<ImuMeas>::reverse_iterator& begin_imu_it,
                             boost::circular_buffer<ImuMeas>::reverse_iterator& end_imu_it);
+  void correctImuMeasurement(ImuMeas &imu);
+  void releaseImuBuffer();
   std::vector<Eigen::Matrix4f, Eigen::aligned_allocator<Eigen::Matrix4f>>
     integrateImu(double start_time, Eigen::Quaternionf q_init, Eigen::Vector3f p_init, Eigen::Vector3f v_init,
                  const std::vector<double>& sorted_timestamps);
@@ -78,7 +80,6 @@ private:
   void pushSubmapIndices(std::vector<float> dists, int k, std::vector<int> frames);
   void buildSubmap(State vehicle_state);
   void buildKeyframesAndSubmap(State vehicle_state);
-  void pauseSubmapBuildIfNeeded();
 
   void debug();
 
@@ -166,12 +167,6 @@ private:
   std::vector<int> submap_kf_idx_curr;
   std::vector<int> submap_kf_idx_prev;
 
-  bool new_submap_is_ready;
-  std::future<void> submap_future;
-  std::condition_variable submap_build_cv;
-  bool main_loop_running;
-  std::mutex main_loop_running_mutex;
-
   // Timestamps
   ros::Time scan_header_stamp;
   double scan_stamp;
@@ -216,11 +211,15 @@ private:
     double dt; // defined as the difference between the current and the previous measurement
     Eigen::Vector3f ang_vel;
     Eigen::Vector3f lin_accel;
+    Eigen::Vector3f raw_ang_vel;
+    Eigen::Vector3f raw_lin_accel;
   }; ImuMeas imu_meas;
 
   boost::circular_buffer<ImuMeas> imu_buffer;
   std::mutex mtx_imu;
   std::condition_variable cv_imu_stamp;
+  bool imu_buffer_occupied{false};
+  std::queue<ImuMeas> imu_buffer_tmp;
 
   static bool comparatorImu(ImuMeas m1, ImuMeas m2) {
     return (m1.stamp < m2.stamp);
@@ -229,7 +228,6 @@ private:
   // Geometric Observer
   struct Geo {
     bool first_opt_done;
-    std::mutex mtx;
     double dp;
     double dq_deg;
     Eigen::Vector3f prev_p;

@@ -248,53 +248,65 @@ template <typename PointSource, typename PointTarget>
 double NanoGICP<PointSource, PointTarget>::linearize(const Eigen::Isometry3d& trans, Eigen::Matrix<double, 6, 6>* H, Eigen::Matrix<double, 6, 1>* b) {
   update_correspondences(trans);
 
-  double sum_errors = 0.0;
-  std::vector<Eigen::Matrix<double, 6, 6>, Eigen::aligned_allocator<Eigen::Matrix<double, 6, 6>>> Hs(num_threads_);
-  std::vector<Eigen::Matrix<double, 6, 1>, Eigen::aligned_allocator<Eigen::Matrix<double, 6, 1>>> bs(num_threads_);
-  for (int i = 0; i < num_threads_; i++) {
-    Hs[i].setZero();
-    bs[i].setZero();
-  }
+  // Fixed point ranges keep the summation order independent of thread scheduling.
+  constexpr std::size_t block_size = 256;
+  const std::size_t num_blocks = input_->size() / block_size + (input_->size() % block_size != 0);
+  const bool compute_derivatives = H != nullptr && b != nullptr;
+  std::vector<Eigen::Matrix<double, 6, 6>> Hs(compute_derivatives ? num_blocks : 0);
+  std::vector<Eigen::Matrix<double, 6, 1>> bs(compute_derivatives ? num_blocks : 0);
+  // Keep the point-wise error sum consistent with compute_error().
+  std::vector<double> error_list(input_->size(), 0.0);
 
-#pragma omp parallel for num_threads(num_threads_) reduction(+ : sum_errors) schedule(guided, 8)
-  for (int i = 0; i < input_->size(); i++) {
-    int target_index = correspondences_[i];
-    if (target_index < 0) {
-      continue;
-    }
+#pragma omp parallel for num_threads(num_threads_) schedule(guided, 1)
+  for (std::size_t block = 0; block < num_blocks; ++block) {
+    Eigen::Matrix<double, 6, 6> block_H = Eigen::Matrix<double, 6, 6>::Zero();
+    Eigen::Matrix<double, 6, 1> block_b = Eigen::Matrix<double, 6, 1>::Zero();
+    const std::size_t end = std::min((block + 1) * block_size, input_->size());
+    for (std::size_t i = block * block_size; i < end; ++i) {
+      int target_index = correspondences_[i];
+      if (target_index < 0) {
+        continue;
+      }
 
-    const Eigen::Vector4d mean_A = input_->at(i).getVector4fMap().template cast<double>();
+      const Eigen::Vector4d mean_A = input_->at(i).getVector4fMap().template cast<double>();
 
-    const Eigen::Vector4d mean_B = target_->at(target_index).getVector4fMap().template cast<double>();
+      const Eigen::Vector4d mean_B = target_->at(target_index).getVector4fMap().template cast<double>();
 
-    const Eigen::Vector4d transed_mean_A = trans * mean_A;
-    const Eigen::Vector4d error = mean_B - transed_mean_A;
+      const Eigen::Vector4d transed_mean_A = trans * mean_A;
+      const Eigen::Vector4d error = mean_B - transed_mean_A;
 
-    sum_errors += error.transpose() * mahalanobis_[i] * error;
+      error_list[i] = error.transpose() * mahalanobis_[i] * error;
 
     if (H == nullptr || b == nullptr) {
       continue;
     }
 
-    Eigen::Matrix<double, 4, 6> dtdx0 = Eigen::Matrix<double, 4, 6>::Zero();
-    dtdx0.block<3, 3>(0, 0) = skewd(transed_mean_A.head<3>());
-    dtdx0.block<3, 3>(0, 3) = -Eigen::Matrix3d::Identity();
+      Eigen::Matrix<double, 4, 6> dtdx0 = Eigen::Matrix<double, 4, 6>::Zero();
+      dtdx0.block<3, 3>(0, 0) = skewd(transed_mean_A.head<3>());
+      dtdx0.block<3, 3>(0, 3) = -Eigen::Matrix3d::Identity();
 
-    Eigen::Matrix<double, 4, 6> jlossexp = dtdx0;
+      Eigen::Matrix<double, 4, 6> jlossexp = dtdx0;
 
-    Eigen::Matrix<double, 6, 6> Hi = jlossexp.transpose() * mahalanobis_[i] * jlossexp;
-    Eigen::Matrix<double, 6, 1> bi = jlossexp.transpose() * mahalanobis_[i] * error;
+      Eigen::Matrix<double, 6, 6> Hi = jlossexp.transpose() * mahalanobis_[i] * jlossexp;
+      Eigen::Matrix<double, 6, 1> bi = jlossexp.transpose() * mahalanobis_[i] * error;
 
-    Hs[omp_get_thread_num()] += Hi;
-    bs[omp_get_thread_num()] += bi;
+      block_H += Hi;
+      block_b += bi;
+    }
+    if (compute_derivatives) {
+      Hs[block] = block_H;
+      bs[block] = block_b;
+    }
   }
 
-  if (H && b) {
+  const double sum_errors = std::accumulate(error_list.begin(), error_list.end(), 0.0);
+
+  if (compute_derivatives) {
     H->setZero();
     b->setZero();
-    for (int i = 0; i < num_threads_; i++) {
-      (*H) += Hs[i];
-      (*b) += bs[i];
+    for (std::size_t block = 0; block < num_blocks; ++block) {
+      (*H) += Hs[block];
+      (*b) += bs[block];
     }
   }
 
@@ -304,8 +316,9 @@ double NanoGICP<PointSource, PointTarget>::linearize(const Eigen::Isometry3d& tr
 template <typename PointSource, typename PointTarget>
 double NanoGICP<PointSource, PointTarget>::compute_error(const Eigen::Isometry3d& trans) {
   double sum_errors = 0.0;
+  std::vector<double> error_list(input_->size(), 0.0);
 
-#pragma omp parallel for num_threads(num_threads_) reduction(+ : sum_errors) schedule(guided, 8)
+#pragma omp parallel for num_threads(num_threads_)
   for (int i = 0; i < input_->size(); i++) {
     int target_index = correspondences_[i];
     if (target_index < 0) {
@@ -318,9 +331,10 @@ double NanoGICP<PointSource, PointTarget>::compute_error(const Eigen::Isometry3d
 
     const Eigen::Vector4d transed_mean_A = trans * mean_A;
     const Eigen::Vector4d error = mean_B - transed_mean_A;
-
-    sum_errors += error.transpose() * mahalanobis_[i] * error;
+    error_list[i] = error.transpose() * mahalanobis_[i] * error;
   }
+
+  sum_errors = std::accumulate(error_list.begin(), error_list.end(), 0.0);
 
   return sum_errors;
 }
@@ -334,16 +348,16 @@ bool NanoGICP<PointSource, PointTarget>::calculate_covariances(
   float& density) {
 
   covariances.resize(cloud->size());
-  float sum_k_sq_distances = 0.0;
+  std::vector<float> sum_k_sq_distances_vec(cloud->size(), 0.0f);
 
-#pragma omp parallel for num_threads(num_threads_) schedule(guided, 8) reduction(+:sum_k_sq_distances)
+#pragma omp parallel for num_threads(num_threads_) schedule(guided, 8)
   for (int i = 0; i < cloud->size(); i++) {
     std::vector<int> k_indices;
     std::vector<float> k_sq_distances;
     kdtree.nearestKSearch(cloud->at(i), k_correspondences_, k_indices, k_sq_distances);
 
     const int normalization = ((k_correspondences_ - 1) * (2 + k_correspondences_)) / 2;
-    sum_k_sq_distances += std::accumulate(k_sq_distances.begin()+1, k_sq_distances.end(), 0.0) / normalization;
+    sum_k_sq_distances_vec[i] = std::accumulate(k_sq_distances.begin()+1, k_sq_distances.end(), 0.0) / normalization;
 
     Eigen::Matrix<double, 4, -1> neighbors(4, k_correspondences_);
     for (int j = 0; j < k_indices.size(); j++) {
@@ -386,7 +400,7 @@ bool NanoGICP<PointSource, PointTarget>::calculate_covariances(
     }
   }
 
-  density = sum_k_sq_distances / cloud->size();
+  density = std::accumulate(sum_k_sq_distances_vec.begin(), sum_k_sq_distances_vec.end(), 0.0) / cloud->size();
 
   return true;
 }
